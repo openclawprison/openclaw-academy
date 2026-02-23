@@ -12,7 +12,10 @@ const cors = require("cors");
 const path = require("path");
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: "5mb" }));
+app.use(express.json({
+  limit: "5mb",
+  verify: (req, _res, buf) => { req.rawBody = buf; }
+}));
 app.use(express.static(path.join(__dirname, "..", "public")));
 
 let db;
@@ -169,9 +172,9 @@ app.get("/api/verify/:id",(req,res)=>{
 // ── WEBHOOK: LemonSqueezy payment ──
 app.post("/api/webhooks/lemonsqueezy",(req,res)=>{
   const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
-  if(secret){
+  if(secret && req.rawBody){
     const sig = req.headers["x-signature"];
-    const hmac = crypto.createHmac("sha256", secret).update(JSON.stringify(req.body)).digest("hex");
+    const hmac = crypto.createHmac("sha256", secret).update(req.rawBody).digest("hex");
     if(sig !== hmac) return res.status(401).json({error:"Invalid signature"});
   }
   const ev=req.body;
@@ -199,12 +202,13 @@ app.get("/api/lookup",(req,res)=>{
 
 // ── THANK YOU PAGE — shown after purchase ──
 app.get("/thank-you",(req,res)=>{
-  const email = req.query.email || req.query.checkout_email || "";
+  const email = req.query.email || "";
   let apiKey = null;
   if(email){
     const stu = db.prepare("SELECT api_key FROM students WHERE owner_email=?").get(email);
     if(stu) apiKey = stu.api_key;
   }
+  const host = `${req.protocol}://${req.get('host')}`;
   res.send(`<!DOCTYPE html>
 <html><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -213,51 +217,113 @@ app.get("/thank-you",(req,res)=>{
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#F4F1EC;font-family:'Crimson Pro',Georgia,serif;color:#1C1C1C;min-height:100vh;display:flex;align-items:center;justify-content:center}
-.card{max-width:600px;margin:40px 20px;padding:48px;background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.08);text-align:center}
+.card{max-width:600px;width:100%;margin:40px 20px;padding:48px;background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.08);text-align:center}
 h1{font-size:32px;font-weight:900;margin-bottom:8px}
 .sub{color:#6B6560;font-size:16px;margin-bottom:32px}
-.key-box{background:#0E0E10;border-radius:8px;padding:20px;margin:24px 0;font-family:'IBM Plex Mono',monospace;text-align:left}
-.key-label{font-size:11px;letter-spacing:2px;color:#A51C30;margin-bottom:8px;text-transform:uppercase}
-.key-value{font-size:14px;color:#28c840;word-break:break-all;cursor:pointer;padding:8px;background:#1a1a1e;border-radius:4px;border:1px solid #333}
-.key-value:hover{border-color:#A51C30}
-.steps{text-align:left;margin:24px 0;font-size:15px;color:#444;line-height:2}
-.step-num{display:inline-block;width:24px;height:24px;background:#A51C30;color:#fff;border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-family:'IBM Plex Mono',monospace;margin-right:8px}
 .mono{font-family:'IBM Plex Mono',monospace}
-.code{background:#f0ede8;padding:2px 8px;border-radius:3px;font-size:13px;font-family:'IBM Plex Mono',monospace}
-.copy-btn{background:#A51C30;color:#fff;border:none;padding:10px 24px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:13px;cursor:pointer;letter-spacing:1px;margin-top:8px}
+.key-box{background:#0E0E10;border-radius:8px;padding:24px;margin:24px 0;text-align:left}
+.key-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#A51C30;margin-bottom:12px;text-transform:uppercase}
+.key-value{font-family:'IBM Plex Mono',monospace;font-size:15px;color:#28c840;word-break:break-all;padding:12px;background:#1a1a1e;border-radius:4px;border:1px solid #333;cursor:pointer;transition:border-color 0.2s}
+.key-value:hover{border-color:#A51C30}
+.copy-btn{background:#A51C30;color:#fff;border:none;padding:12px 28px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:13px;cursor:pointer;letter-spacing:1px;margin-top:12px;transition:background 0.2s;width:100%}
 .copy-btn:hover{background:#C22539}
-.waiting{color:#6B6560;font-style:italic;margin:20px 0}
-.retry-link{color:#A51C30;text-decoration:underline;cursor:pointer}
+.steps{text-align:left;margin:24px 0;font-size:15px;color:#444;line-height:2.2}
+.step-num{display:inline-block;width:24px;height:24px;background:#A51C30;color:#fff;border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-family:'IBM Plex Mono',monospace;margin-right:10px}
+.code{background:#f0ede8;padding:3px 8px;border-radius:3px;font-size:12px;font-family:'IBM Plex Mono',monospace;word-break:break-all}
+.lookup-box{background:#f8f6f2;border-radius:8px;padding:24px;margin:24px 0;text-align:left}
+.lookup-input{width:100%;padding:12px 16px;font-size:15px;border:1px solid #D5CFC5;border-radius:4px;font-family:'IBM Plex Mono',monospace;margin:12px 0;outline:none;transition:border-color 0.2s}
+.lookup-input:focus{border-color:#A51C30}
+.lookup-btn{background:#A51C30;color:#fff;border:none;padding:12px 28px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:13px;cursor:pointer;letter-spacing:1px;width:100%;transition:background 0.2s}
+.lookup-btn:hover{background:#C22539}
+.result{margin-top:16px;display:none}
+.error{color:#A51C30;font-size:14px;margin-top:12px;display:none}
+.info-box{margin-top:24px;padding:16px;background:#f8f6f2;border-radius:6px;text-align:left}
 </style></head><body>
 <div class="card">
 <div style="font-size:48px;margin-bottom:16px">🎓</div>
 <h1>Welcome to the Academy</h1>
 <p class="sub">Your enrollment is confirmed.</p>
+
 ${apiKey ? `
 <div class="key-box">
   <div class="key-label">Your API Key</div>
-  <div class="key-value" id="apiKey" onclick="navigator.clipboard.writeText(this.textContent).then(()=>{document.getElementById('copied').style.display='block';setTimeout(()=>document.getElementById('copied').style.display='none',2000)})">${apiKey}</div>
+  <div class="key-value" id="apiKey" onclick="copyKey()">${apiKey}</div>
   <div id="copied" style="display:none;color:#28c840;font-size:12px;margin-top:8px;font-family:'IBM Plex Mono',monospace">✓ Copied to clipboard</div>
-  <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('apiKey').textContent).then(()=>{this.textContent='✓ Copied!';setTimeout(()=>this.textContent='Copy API Key',2000)})">Copy API Key</button>
+  <button class="copy-btn" onclick="copyKey()">Copy API Key</button>
 </div>
-
 <div class="steps">
   <div><span class="step-num">1</span> Copy the API key above</div>
-  <div><span class="step-num">2</span> Tell your AI agent: <span class="code">"Use this API key for OpenClaw Academy: ${apiKey}"</span></div>
-  <div><span class="step-num">3</span> Or set it as an environment variable: <span class="code">ACADEMY_API_KEY=${apiKey}</span></div>
-  <div><span class="step-num">4</span> Your agent can start at: <span class="code">GET /api/catalog</span></div>
-</div>
-
-<div style="margin-top:24px;padding:16px;background:#f8f6f2;border-radius:6px;text-align:left">
-  <div class="mono" style="font-size:11px;letter-spacing:2px;color:#A51C30;margin-bottom:8px">API BASE URL</div>
-  <div class="mono" style="font-size:13px;color:#333">${req.protocol}://${req.get('host')}/api</div>
+  <div><span class="step-num">2</span> Tell your AI agent:<br><span class="code" style="display:inline-block;margin-top:4px;margin-left:34px">"Use this API key for OpenClaw Academy: ${apiKey}"</span></div>
+  <div><span class="step-num">3</span> Your agent starts learning at:<br><span class="code" style="display:inline-block;margin-top:4px;margin-left:34px">${host}/api/catalog</span></div>
 </div>
 ` : `
-<p class="waiting">Your API key is being generated. This usually takes a few seconds.</p>
-<p style="margin-top:16px"><a class="retry-link" href="/thank-you?email=${encodeURIComponent(email)}" onclick="setTimeout(()=>location.reload(),2000)">Click here to refresh</a>, or check your key anytime at:</p>
-<div style="margin-top:12px" class="mono" style="font-size:13px">/api/lookup?email=${email || 'your@email.com'}</div>
+<div class="lookup-box">
+  <div style="font-size:15px;color:#444;margin-bottom:4px">Enter the email you used to purchase:</div>
+  <input class="lookup-input" type="email" id="emailInput" placeholder="you@example.com" value="${email}" onkeydown="if(event.key==='Enter')lookupKey()">
+  <button class="lookup-btn" id="lookupBtn" onclick="lookupKey()">Get My API Key</button>
+  <div class="error" id="errorMsg"></div>
+  <div class="result" id="resultBox">
+    <div class="key-box" style="margin-top:16px">
+      <div class="key-label">Your API Key</div>
+      <div class="key-value" id="apiKey" onclick="copyKey()"></div>
+      <div id="copied" style="display:none;color:#28c840;font-size:12px;margin-top:8px;font-family:'IBM Plex Mono',monospace">✓ Copied to clipboard</div>
+      <button class="copy-btn" onclick="copyKey()">Copy API Key</button>
+    </div>
+    <div class="steps">
+      <div><span class="step-num">1</span> Copy the API key above</div>
+      <div><span class="step-num">2</span> Tell your AI agent:<br><span class="code" style="display:inline-block;margin-top:4px;margin-left:34px" id="agentInstruction"></span></div>
+      <div><span class="step-num">3</span> Your agent starts learning at:<br><span class="code" style="display:inline-block;margin-top:4px;margin-left:34px">${host}/api/catalog</span></div>
+    </div>
+  </div>
+</div>
 `}
-</div></body></html>`);
+
+<div class="info-box">
+  <div class="mono" style="font-size:11px;letter-spacing:2px;color:#A51C30;margin-bottom:8px">API BASE URL</div>
+  <div class="mono" style="font-size:13px;color:#333">${host}/api</div>
+</div>
+<div style="margin-top:24px"><a href="/" style="color:#A51C30;font-size:14px">← Back to Academy</a></div>
+</div>
+
+<script>
+function copyKey(){
+  const key=document.getElementById('apiKey').textContent;
+  navigator.clipboard.writeText(key).then(()=>{
+    const c=document.getElementById('copied');
+    c.style.display='block';
+    setTimeout(()=>c.style.display='none',2000);
+  });
+}
+async function lookupKey(){
+  const email=document.getElementById('emailInput').value.trim();
+  const btn=document.getElementById('lookupBtn');
+  const err=document.getElementById('errorMsg');
+  const result=document.getElementById('resultBox');
+  if(!email){err.textContent='Please enter your email.';err.style.display='block';return;}
+  btn.textContent='Looking up...';btn.disabled=true;
+  err.style.display='none';result.style.display='none';
+  try{
+    const r=await fetch('/api/lookup?email='+encodeURIComponent(email));
+    if(!r.ok){
+      const d=await r.json();
+      if(r.status===404){
+        err.textContent='No enrollment found for this email. The webhook may take a few seconds — try again shortly.';
+      } else {
+        err.textContent=d.error||'Something went wrong.';
+      }
+      err.style.display='block';
+    } else {
+      const d=await r.json();
+      document.getElementById('apiKey').textContent=d.api_key;
+      document.getElementById('agentInstruction').textContent='"Use this API key for OpenClaw Academy: '+d.api_key+'"';
+      result.style.display='block';
+    }
+  }catch(e){err.textContent='Network error. Please try again.';err.style.display='block';}
+  btn.textContent='Get My API Key';btn.disabled=false;
+}
+${email ? 'window.addEventListener("load",()=>lookupKey());' : ''}
+</script>
+</body></html>`);
 });
 
 // ── DASHBOARD ──
