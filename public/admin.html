@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Dashboard — OpenClaw Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0E0E10;font-family:'IBM Plex Mono',monospace;color:#ddd;min-height:100vh}
+.top{background:#1C1C1C;padding:20px 32px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #333}
+.top h1{font-size:18px;font-weight:600;color:#A51C30}
+.top a{color:#666;text-decoration:none;font-size:12px}
+.container{max-width:1000px;margin:0 auto;padding:32px 20px}
+.login-card{max-width:420px;margin:80px auto;padding:40px;background:#1C1C1C;border-radius:8px;border:1px solid #333;text-align:center}
+.login-card h2{font-size:20px;font-weight:600;color:#A51C30;margin-bottom:8px;font-family:'Crimson Pro',serif}
+.login-card p{color:#666;font-size:12px;margin-bottom:20px}
+.input{width:100%;padding:12px 14px;font-size:13px;border:1px solid #333;border-radius:4px;background:#0E0E10;color:#ddd;font-family:'IBM Plex Mono',monospace;outline:none}
+.input:focus{border-color:#A51C30}
+.btn{width:100%;padding:12px;background:#A51C30;color:#fff;border:none;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:13px;cursor:pointer;margin-top:10px}
+.btn:hover{background:#C22539}
+.error{color:#ff5f57;font-size:12px;margin-top:10px;display:none}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+.stat-card{background:#1C1C1C;border:1px solid #2a2a2a;border-radius:6px;padding:20px;text-align:center}
+.stat-val{font-size:28px;font-weight:600;color:#A51C30}
+.stat-label{font-size:10px;letter-spacing:2px;color:#555;text-transform:uppercase;margin-top:4px}
+table{width:100%;border-collapse:collapse;background:#1C1C1C;border-radius:6px;overflow:hidden;border:1px solid #2a2a2a}
+th{background:#151517;padding:12px 16px;text-align:left;font-size:10px;letter-spacing:2px;color:#555;text-transform:uppercase;border-bottom:1px solid #2a2a2a}
+td{padding:12px 16px;border-bottom:1px solid #1a1a1e;font-size:13px;color:#aaa}
+tr:hover td{background:#1a1a1e}
+tr{cursor:pointer}
+.badge{padding:3px 8px;border-radius:3px;font-size:10px;letter-spacing:1px}
+.badge-green{background:#28c84020;color:#28c840}
+.badge-yellow{background:#febc2e20;color:#febc2e}
+.badge-red{background:#ff5f5720;color:#ff5f57}
+.badge-gray{background:#33333380;color:#666}
+.hidden{display:none}
+.detail-panel{background:#1C1C1C;border:1px solid #2a2a2a;border-radius:6px;padding:24px;margin-top:20px}
+.detail-panel h3{font-size:16px;color:#A51C30;margin-bottom:16px;font-family:'Crimson Pro',serif;font-weight:700}
+.detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:20px}
+.detail-item{padding:12px;background:#0E0E10;border-radius:4px}
+.detail-label{font-size:10px;color:#555;letter-spacing:1px;text-transform:uppercase}
+.detail-val{font-size:14px;color:#ddd;margin-top:4px}
+.unit-row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #1a1a1e}
+.unit-row:last-child{border-bottom:none}
+.back-btn{background:none;border:1px solid #333;color:#888;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:12px;font-family:'IBM Plex Mono',monospace;margin-bottom:20px}
+.back-btn:hover{border-color:#A51C30;color:#A51C30}
+@media(max-width:640px){.stats{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}}
+</style></head><body>
+
+<div class="top">
+  <h1>◆ ADMIN DASHBOARD</h1>
+  <a href="/">← Academy</a>
+</div>
+
+<div class="container">
+  <!-- LOGIN -->
+  <div id="loginView" class="login-card">
+    <h2>Admin Access</h2>
+    <p>Enter your admin key</p>
+    <input class="input" type="password" id="adminKeyInput" placeholder="admin key" onkeydown="if(event.key==='Enter')adminLogin()">
+    <button class="btn" onclick="adminLogin()">Access Dashboard</button>
+    <div class="error" id="loginError"></div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashView" class="hidden">
+    <!-- STATS -->
+    <div class="stats" id="statsContainer"></div>
+
+    <!-- STUDENT LIST -->
+    <div id="listView">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h2 style="font-size:16px;color:#ddd;font-family:'Crimson Pro',serif;font-weight:700">All Students</h2>
+        <button onclick="loadStats()" style="background:none;border:1px solid #333;color:#666;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:11px">↻ Refresh</button>
+      </div>
+      <table>
+        <thead><tr><th>Email</th><th>Enrolled</th><th>Progress</th><th>Avg Score</th><th>Final</th><th>Status</th></tr></thead>
+        <tbody id="studentTable"></tbody>
+      </table>
+    </div>
+
+    <!-- STUDENT DETAIL -->
+    <div id="detailView" class="hidden">
+      <button class="back-btn" onclick="showList()">← Back to all students</button>
+      <div id="detailContent"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let adminKey='';
+
+async function adminLogin(){
+  const key=document.getElementById('adminKeyInput').value.trim();
+  if(!key){document.getElementById('loginError').textContent='Enter admin key';document.getElementById('loginError').style.display='block';return;}
+  try{
+    const r=await fetch('/api/admin/stats',{headers:{'x-admin-key':key}});
+    if(!r.ok){document.getElementById('loginError').textContent='Invalid admin key';document.getElementById('loginError').style.display='block';return;}
+    adminKey=key;
+    document.getElementById('loginView').classList.add('hidden');
+    document.getElementById('dashView').classList.remove('hidden');
+    loadStats();
+  }catch(e){document.getElementById('loginError').textContent='Network error';document.getElementById('loginError').style.display='block';}
+}
+
+async function loadStats(){
+  const[statsR,studentsR]=await Promise.all([
+    fetch('/api/admin/stats',{headers:{'x-admin-key':adminKey}}),
+    fetch('/api/admin/students',{headers:{'x-admin-key':adminKey}})
+  ]);
+  const stats=await statsR.json();
+  const students=await studentsR.json();
+  
+  document.getElementById('statsContainer').innerHTML=[
+    {v:stats.enrolled,l:'Enrolled'},
+    {v:stats.graduated,l:'Graduated'},
+    {v:stats.exams_taken,l:'Exams Taken'},
+    {v:stats.avg_final_score||'—',l:'Avg Final Score'},
+    {v:stats.revenue_estimate,l:'Est Revenue'},
+    {v:stats.students,l:'Total Accounts'}
+  ].map(s=>`<div class="stat-card"><div class="stat-val">${s.v}</div><div class="stat-label">${s.l}</div></div>`).join('');
+
+  document.getElementById('studentTable').innerHTML=students.map(s=>{
+    const pct=Math.round((s.units_completed/s.total_units)*100);
+    const statusBadge=s.graduated?'<span class="badge badge-green">GRADUATED</span>':
+      s.units_completed>0?'<span class="badge badge-yellow">IN PROGRESS</span>':
+      '<span class="badge badge-gray">ENROLLED</span>';
+    return `<tr onclick="loadStudent('${s.id}')">
+      <td style="color:#ddd">${s.email||'—'}</td>
+      <td>${(s.enrolled_at||'').split('T')[0]||'—'}</td>
+      <td><span style="color:${pct===100?'#28c840':pct>0?'#febc2e':'#555'}">${s.units_completed}/${s.total_units}</span> <span style="color:#555">(${pct}%)</span></td>
+      <td>${s.avg_unit_score||'—'}</td>
+      <td style="color:${s.final_score?'#28c840':'#555'}">${s.final_score||'—'}</td>
+      <td>${statusBadge}</td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="6" style="text-align:center;color:#555">No students yet</td></tr>';
+}
+
+async function loadStudent(id){
+  const r=await fetch('/api/admin/student/'+id,{headers:{'x-admin-key':adminKey}});
+  const d=await r.json();
+  
+  document.getElementById('listView').classList.add('hidden');
+  document.getElementById('detailView').classList.remove('hidden');
+  
+  const s=d.student;
+  const e=d.enrollment;
+  const cert=d.certificate;
+  const scoring=d.scoring_exam;
+  const interview=d.exit_interview;
+  
+  const unitsDone=d.progress.filter(p=>p.status==='completed').length;
+  const avgScore=d.progress.filter(p=>p.score!=null);
+  const avg=avgScore.length?Math.round(avgScore.reduce((a,p)=>a+p.score,0)/avgScore.length*10)/10:null;
+
+  let html=`
+    <div class="detail-panel">
+      <h3>${s.email}</h3>
+      <div class="detail-grid">
+        <div class="detail-item"><div class="detail-label">Created</div><div class="detail-val">${(s.created_at||'').split('T')[0]}</div></div>
+        <div class="detail-item"><div class="detail-label">Enrolled</div><div class="detail-val">${(e?.enrolled_at||'').split('T')[0]||'—'}</div></div>
+        <div class="detail-item"><div class="detail-label">Progress</div><div class="detail-val">${unitsDone}/21 units (${Math.round(unitsDone/21*100)}%)</div></div>
+        <div class="detail-item"><div class="detail-label">Avg Unit Score</div><div class="detail-val">${avg||'—'}</div></div>
+        <div class="detail-item"><div class="detail-label">Final Score</div><div class="detail-val" style="color:${scoring?'#28c840':'#555'}">${scoring?.score||'Not taken'}</div></div>
+        <div class="detail-item"><div class="detail-label">Certificate</div><div class="detail-val" style="color:${cert?'#28c840':'#555'}">${cert?cert.id:'Not graduated'}</div></div>
+      </div>
+    </div>
+
+    <div class="detail-panel" style="margin-top:12px">
+      <h3>Unit Progress</h3>
+      <div style="background:#0E0E10;border-radius:4px;overflow:hidden">
+        ${d.progress.map(p=>{
+          const sc=p.score;
+          const scColor=sc>=80?'#28c840':sc>=50?'#febc2e':'#ff5f57';
+          const statusBadge=p.status==='completed'?'<span class="badge badge-green">DONE</span>':
+            p.status==='in_progress'?'<span class="badge badge-yellow">STARTED</span>':
+            '<span class="badge badge-gray">NOT STARTED</span>';
+          return `<div class="unit-row">
+            <span style="color:#888;min-width:100px">${p.unit}</span>
+            <span style="flex:1">${statusBadge}</span>
+            <span style="min-width:40px;text-align:center;color:#555">${p.lessons.length} lessons</span>
+            <span style="min-width:60px;text-align:right;color:${sc!=null?scColor:'#333'}">${sc!=null?sc+'/100':'—'}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+
+  if(d.exams.length){
+    html+=`<div class="detail-panel" style="margin-top:12px">
+      <h3>Exam Results (${d.exams.length} taken)</h3>
+      <div style="background:#0E0E10;border-radius:4px;overflow:hidden">
+        ${d.exams.map(e=>{
+          const g=e.grading;
+          const tasks=g.tasks||[];
+          return `<div style="padding:12px;border-bottom:1px solid #1a1a1e">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+              <span style="color:#A51C30">${e.exam}</span>
+              <span style="color:${e.score>=80?'#28c840':e.score>=50?'#febc2e':'#ff5f57'}">${e.score}/100</span>
+            </div>
+            <div style="font-size:11px;color:#555">${(e.completed_at||'').replace('T',' ').split('.')[0]}</div>
+            ${tasks.map(t=>`<div style="margin-top:6px;font-size:12px;color:#777">  ${t.id}: ${t.score}/${t.maxScore} — ${t.feedback||''}</div>`).join('')}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  if(scoring){
+    const sg=scoring.grading;
+    const tasks=sg.tasks||[];
+    html+=`<div class="detail-panel" style="margin-top:12px">
+      <h3>Final Scoring Exam — ${scoring.score}/100</h3>
+      <div style="background:#0E0E10;border-radius:4px;padding:12px;overflow:hidden">
+        ${tasks.map(t=>`<div style="margin:6px 0;font-size:12px;color:#777">${t.id}: ${t.score}/${t.maxScore} — ${t.feedback||''}</div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  if(interview){
+    html+=`<div class="detail-panel" style="margin-top:12px">
+      <h3>Exit Interview</h3>
+      <div style="background:#0E0E10;border-radius:4px;padding:16px;font-size:13px;color:#aaa;line-height:1.8">
+        ${Object.entries(interview).map(([k,v])=>`<div style="margin-bottom:8px"><span style="color:#A51C30">${k}:</span> ${v}</div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('detailContent').innerHTML=html;
+}
+
+function showList(){
+  document.getElementById('detailView').classList.add('hidden');
+  document.getElementById('listView').classList.remove('hidden');
+}
+</script>
+</body></html>

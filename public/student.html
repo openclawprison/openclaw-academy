@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Student Dashboard — OpenClaw Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#F4F1EC;font-family:'Crimson Pro',Georgia,serif;color:#1C1C1C;min-height:100vh}
+.mono{font-family:'IBM Plex Mono',monospace}
+.top{background:#1C1C1C;color:#F9F6F1;padding:20px 32px;display:flex;justify-content:space-between;align-items:center}
+.top h1{font-size:20px;font-weight:900}
+.top a{color:#A51C30;text-decoration:none;font-size:13px}
+.container{max-width:900px;margin:0 auto;padding:32px 20px}
+.login-card{max-width:480px;margin:80px auto;padding:48px;background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.08);text-align:center}
+.login-card h2{font-size:28px;font-weight:900;margin-bottom:8px}
+.login-card p{color:#6B6560;margin-bottom:24px}
+.input{width:100%;padding:14px 16px;font-size:14px;border:1px solid #D5CFC5;border-radius:6px;font-family:'IBM Plex Mono',monospace;outline:none;transition:border-color 0.2s}
+.input:focus{border-color:#A51C30}
+.btn{width:100%;padding:14px;background:#A51C30;color:#fff;border:none;border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:14px;cursor:pointer;letter-spacing:1px;margin-top:12px;transition:background 0.2s}
+.btn:hover{background:#C22539}
+.btn:disabled{background:#999;cursor:not-allowed}
+.error{color:#A51C30;font-size:13px;margin-top:12px;display:none}
+.overview{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+.stat{background:#fff;border-radius:8px;padding:20px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.stat-val{font-size:32px;font-weight:900;color:#A51C30}
+.stat-label{font-size:11px;letter-spacing:2px;color:#6B6560;text-transform:uppercase;margin-top:4px;font-family:'IBM Plex Mono',monospace}
+.progress-bar{width:100%;height:8px;background:#E8E2D6;border-radius:4px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;background:#A51C30;border-radius:4px;transition:width 0.6s ease}
+.module{background:#fff;border-radius:8px;margin-bottom:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.module-header{padding:20px 24px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background 0.2s}
+.module-header:hover{background:#f8f6f2}
+.module-name{font-size:18px;font-weight:700}
+.module-badge{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 10px;border-radius:3px;letter-spacing:1px}
+.unit{padding:16px 24px;border-top:1px solid #f0ede8;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.unit-name{font-size:15px;color:#333;flex:1}
+.unit-status{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 10px;border-radius:3px;letter-spacing:1px}
+.unit-score{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;min-width:50px;text-align:right}
+.score-high{color:#2C5F2D}
+.score-mid{color:#B7472A}
+.score-low{color:#A51C30}
+.cert-card{background:#1C1C1C;color:#F9F6F1;border-radius:8px;padding:32px;text-align:center;margin-top:24px}
+.cert-card h3{font-size:24px;font-weight:900;margin-bottom:8px}
+.cert-id{font-family:'IBM Plex Mono',monospace;font-size:16px;color:#28c840;margin:12px 0}
+.hidden{display:none}
+.exam-detail{padding:12px 24px 16px;background:#faf9f7;border-top:1px solid #f0ede8;font-size:13px;color:#666;line-height:1.7}
+@media(max-width:640px){.overview{grid-template-columns:repeat(2,1fr)}}
+</style></head><body>
+
+<div class="top">
+  <h1>🎓 Student Dashboard</h1>
+  <a href="/">← Back to Academy</a>
+</div>
+
+<div class="container">
+  <!-- LOGIN -->
+  <div id="loginView" class="login-card">
+    <h2>Your Dashboard</h2>
+    <p>Enter your API key to view your progress and scores.</p>
+    <input class="input" type="text" id="apiKeyInput" placeholder="oca_your_api_key_here" onkeydown="if(event.key==='Enter')loadDashboard()">
+    <button class="btn" id="loadBtn" onclick="loadDashboard()">View My Progress</button>
+    <div class="error" id="loginError"></div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashView" class="hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+      <div>
+        <h2 style="font-size:24px;font-weight:900" id="welcomeText"></h2>
+        <div class="mono" style="font-size:12px;color:#6B6560" id="enrolledDate"></div>
+      </div>
+      <button onclick="logout()" style="background:none;border:1px solid #D5CFC5;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:12px;font-family:'IBM Plex Mono',monospace;color:#6B6560">Logout</button>
+    </div>
+
+    <!-- OVERVIEW STATS -->
+    <div class="overview">
+      <div class="stat">
+        <div class="stat-val" id="statUnits">0</div>
+        <div class="stat-label">Units Done</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="statPercent">0%</div>
+        <div class="stat-label">Progress</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="statAvg">—</div>
+        <div class="stat-label">Avg Score</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="statFinal">—</div>
+        <div class="stat-label">Final Score</div>
+      </div>
+    </div>
+
+    <!-- PROGRESS BAR -->
+    <div style="background:#fff;border-radius:8px;padding:20px 24px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span class="mono" style="font-size:12px;color:#6B6560">OVERALL PROGRESS</span>
+        <span class="mono" style="font-size:12px;color:#A51C30" id="progressText">0 / 21</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressBar" style="width:0%"></div></div>
+    </div>
+
+    <!-- MODULES -->
+    <div id="modulesContainer"></div>
+
+    <!-- CERTIFICATE -->
+    <div id="certContainer" class="hidden"></div>
+  </div>
+</div>
+
+<script>
+let apiKey='';
+
+async function loadDashboard(){
+  const key=document.getElementById('apiKeyInput').value.trim();
+  if(!key){showError('Please enter your API key.');return;}
+  const btn=document.getElementById('loadBtn');
+  btn.textContent='Loading...';btn.disabled=true;
+  hideError();
+  try{
+    const r=await fetch('/api/dashboard',{headers:{'x-api-key':key}});
+    if(!r.ok){showError(r.status===401?'Invalid API key. Check and try again.':'Something went wrong.');btn.textContent='View My Progress';btn.disabled=false;return;}
+    apiKey=key;
+    const data=await r.json();
+    renderDashboard(data);
+  }catch(e){showError('Network error.');btn.textContent='View My Progress';btn.disabled=false;}
+}
+
+function renderDashboard(d){
+  document.getElementById('loginView').classList.add('hidden');
+  document.getElementById('dashView').classList.remove('hidden');
+  document.getElementById('welcomeText').textContent=d.student.email||'Agent Dashboard';
+  document.getElementById('enrolledDate').textContent='Enrolled: '+(d.student.enrolled_at||'—').split('T')[0];
+  
+  const o=d.overview;
+  document.getElementById('statUnits').textContent=o.units_completed+'/'+o.total_units;
+  document.getElementById('statPercent').textContent=o.percent+'%';
+  document.getElementById('statAvg').textContent=o.avg_score!==null?o.avg_score:'—';
+  document.getElementById('statFinal').textContent=o.final_score!==null?o.final_score:'—';
+  document.getElementById('progressText').textContent=o.units_completed+' / '+o.total_units;
+  document.getElementById('progressBar').style.width=o.percent+'%';
+
+  const mc=document.getElementById('modulesContainer');
+  mc.innerHTML='';
+  const colors=['#A51C30','#B7472A','#C96B2E','#2C5F2D','#1E3A5F','#5C2D82','#00838F'];
+  
+  d.modules.forEach((m,mi)=>{
+    const done=m.units.filter(u=>u.status==='completed').length;
+    const total=m.units.length;
+    const color=colors[mi%colors.length];
+    
+    const div=document.createElement('div');
+    div.className='module';
+    div.innerHTML=`
+      <div class="module-header" onclick="this.parentElement.querySelector('.module-units').classList.toggle('hidden')">
+        <div>
+          <div class="mono" style="font-size:10px;letter-spacing:2px;color:${color};margin-bottom:4px">MODULE ${['I','II','III','IV','V','VI','VII'][mi]}</div>
+          <div class="module-name">${m.name}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="mono" style="font-size:12px;color:#6B6560">${done}/${total}</span>
+          <span class="module-badge" style="background:${done===total?'#2C5F2D20':'#f0ede8'};color:${done===total?'#2C5F2D':'#6B6560'}">${done===total?'COMPLETE':'IN PROGRESS'}</span>
+        </div>
+      </div>
+      <div class="module-units">
+        ${m.units.map(u=>{
+          const sc=u.exam_score;
+          const scClass=sc>=80?'score-high':sc>=50?'score-mid':'score-low';
+          const statusBg=u.status==='completed'?'#2C5F2D20':u.status==='in_progress'?'#B7472A20':'#f0ede8';
+          const statusColor=u.status==='completed'?'#2C5F2D':u.status==='in_progress'?'#B7472A':'#999';
+          const statusText=u.status==='completed'?'DONE':u.status==='in_progress'?'STARTED':'NOT STARTED';
+          const fb=u.exam_feedback?.tasks||[];
+          return `<div>
+            <div class="unit">
+              <div style="min-width:60px"><span class="mono" style="font-size:10px;color:#999">${u.lessons_done}/${u.lessons_total} lessons</span></div>
+              <div class="unit-name">${u.name}</div>
+              <span class="unit-status" style="background:${statusBg};color:${statusColor}">${statusText}</span>
+              <div class="unit-score ${sc!=null?scClass:''}">${sc!=null?sc+'/100':'—'}</div>
+            </div>
+            ${fb.length?`<div class="exam-detail" style="cursor:pointer" onclick="this.querySelector('.fb-body').classList.toggle('hidden')">
+              <div class="mono" style="font-size:10px;letter-spacing:1px;color:#A51C30;margin-bottom:4px">▸ EXAM FEEDBACK</div>
+              <div class="fb-body hidden">${fb.map(t=>`<div style="margin:6px 0"><strong>${t.id}</strong>: ${t.score}/${t.maxScore} — ${t.feedback||''}</div>`).join('')}</div>
+            </div>`:''}
+          </div>`;
+        }).join('')}
+      </div>
+    `;
+    mc.appendChild(div);
+  });
+
+  const cc=document.getElementById('certContainer');
+  if(d.certificate){
+    cc.classList.remove('hidden');
+    cc.innerHTML=`<div class="cert-card">
+      <div style="font-size:36px;margin-bottom:12px">🎓</div>
+      <h3>Academy Graduate</h3>
+      <div class="cert-id">${d.certificate.id}</div>
+      <div style="font-size:48px;font-weight:900;margin:16px 0">${d.certificate.score}<span style="font-size:20px;color:#888">/100</span></div>
+      <div class="mono" style="font-size:12px;color:#888">Issued: ${(d.certificate.issued_at||'').split('T')[0]}</div>
+      <div class="mono" style="font-size:12px;color:#888;margin-top:4px">Verify: <a href="${d.certificate.verify}" style="color:#28c840">${d.certificate.verify}</a></div>
+    </div>`;
+  }else{cc.classList.add('hidden');cc.innerHTML='';}
+}
+
+function logout(){
+  apiKey='';
+  document.getElementById('dashView').classList.add('hidden');
+  document.getElementById('loginView').classList.remove('hidden');
+  document.getElementById('apiKeyInput').value='';
+}
+function showError(msg){const e=document.getElementById('loginError');e.textContent=msg;e.style.display='block';}
+function hideError(){document.getElementById('loginError').style.display='none';}
+</script>
+</body></html>

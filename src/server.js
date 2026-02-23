@@ -498,7 +498,105 @@ app.get("/api/certificates/:id",auth,(req,res)=>{
   res.json({certificate:{id:c.id,score:c.score,issued:c.issued_at,units:JSON.parse(c.units_completed)},skill_md:c.skill_md,memory:c.memory_text});
 });
 
+// ── ADMIN API ──
+function adminAuth(req,res,next){
+  const pw=req.headers["x-admin-key"]||req.query.admin_key;
+  if(!pw||pw!==process.env.ADMIN_KEY)return res.status(401).json({error:"Invalid admin key"});
+  next();
+}
+
+app.get("/api/admin/stats",adminAuth,(req,res)=>{
+  const students=db.prepare("SELECT COUNT(*) as c FROM students").get().c;
+  const enrolled=db.prepare("SELECT COUNT(*) as c FROM enrollments WHERE payment_status='paid'").get().c;
+  const graduated=db.prepare("SELECT COUNT(*) as c FROM certificates").get().c;
+  const exams=db.prepare("SELECT COUNT(*) as c FROM exam_results").get().c;
+  const avgScore=db.prepare("SELECT AVG(score) as a FROM scoring_exams WHERE score IS NOT NULL").get().a;
+  res.json({students,enrolled,graduated,exams_taken:exams,avg_final_score:avgScore?Math.round(avgScore*10)/10:null,revenue_estimate:`$${(enrolled*4.99).toFixed(2)}`});
+});
+
+app.get("/api/admin/students",adminAuth,(req,res)=>{
+  const rows=db.prepare(`
+    SELECT s.id, s.owner_email, s.created_at,
+      e.payment_status, e.enrolled_at, e.completed_at,
+      c.id as cert_id, c.score as final_score, c.issued_at as graduated_at,
+      (SELECT COUNT(*) FROM unit_progress WHERE student_id=s.id AND status='completed') as units_done,
+      (SELECT AVG(exam_score) FROM unit_progress WHERE student_id=s.id AND exam_score IS NOT NULL) as avg_unit_score
+    FROM students s
+    LEFT JOIN enrollments e ON e.student_id=s.id
+    LEFT JOIN certificates c ON c.student_id=s.id
+    ORDER BY s.created_at DESC
+  `).all();
+  res.json(rows.map(r=>({
+    id:r.id, email:r.owner_email, enrolled_at:r.enrolled_at, payment:r.payment_status,
+    units_completed:r.units_done, total_units:21,
+    avg_unit_score:r.avg_unit_score?Math.round(r.avg_unit_score*10)/10:null,
+    final_score:r.final_score, graduated:!!r.cert_id,
+    graduated_at:r.graduated_at, cert_id:r.cert_id
+  })));
+});
+
+app.get("/api/admin/student/:id",adminAuth,(req,res)=>{
+  const s=db.prepare("SELECT * FROM students WHERE id=?").get(req.params.id);
+  if(!s)return res.status(404).json({error:"Not found"});
+  const enr=db.prepare("SELECT * FROM enrollments WHERE student_id=?").get(s.id);
+  const progress=db.prepare("SELECT * FROM unit_progress WHERE student_id=? ORDER BY module_id, unit_id").all(s.id);
+  const exams=db.prepare("SELECT * FROM exam_results WHERE student_id=? ORDER BY completed_at DESC").all(s.id);
+  const scoring=db.prepare("SELECT * FROM scoring_exams WHERE student_id=? ORDER BY completed_at DESC").all(s.id);
+  const cert=db.prepare("SELECT * FROM certificates WHERE student_id=?").get(s.id);
+  const interview=db.prepare("SELECT * FROM exit_interviews WHERE student_id=?").get(s.id);
+  res.json({
+    student:{id:s.id,email:s.owner_email,created_at:s.created_at},
+    enrollment:enr?{status:enr.payment_status,enrolled_at:enr.enrolled_at,completed_at:enr.completed_at}:null,
+    progress:progress.map(p=>({unit:p.unit_id,module:p.module_id,status:p.status,score:p.exam_score,lessons:JSON.parse(p.lessons_completed),completed_at:p.exam_completed_at})),
+    exams:exams.map(e=>({exam:e.exam_id,score:e.total_score,completed_at:e.completed_at,grading:JSON.parse(e.grading||'{}')})),
+    scoring_exam:scoring.length?{score:scoring[0].score,completed_at:scoring[0].completed_at,grading:JSON.parse(scoring[0].grading||'{}')}:null,
+    certificate:cert?{id:cert.id,score:cert.score,issued_at:cert.issued_at}:null,
+    exit_interview:interview?JSON.parse(interview.responses||'{}'):null
+  });
+});
+
+// ── STUDENT DASHBOARD API (by api key) ──
+app.get("/api/dashboard",auth,(req,res)=>{
+  const{COURSE}=require("./courses/catalog");
+  const enr=db.prepare("SELECT * FROM enrollments WHERE student_id=?").get(req.student.id);
+  const progress=db.prepare("SELECT * FROM unit_progress WHERE student_id=? ORDER BY module_id, unit_id").all(req.student.id);
+  const exams=db.prepare("SELECT * FROM exam_results WHERE student_id=? ORDER BY completed_at DESC").all(req.student.id);
+  const scoring=db.prepare("SELECT * FROM scoring_exams WHERE student_id=? ORDER BY score DESC LIMIT 1").get(req.student.id);
+  const cert=db.prepare("SELECT * FROM certificates WHERE student_id=?").get(req.student.id);
+  
+  const modules=COURSE.modules.map(m=>{
+    const units=m.units.map(u=>{
+      const p=progress.find(p=>p.unit_id===u.id);
+      const examResults=exams.filter(e=>e.exam_id===u.exam.id);
+      return {
+        id:u.id, name:u.name, status:p?.status||'not_started',
+        lessons_total:u.lessons.length,
+        lessons_done:p?JSON.parse(p.lessons_completed).length:0,
+        exam_score:p?.exam_score, exam_completed_at:p?.exam_completed_at,
+        exam_feedback:examResults.length?JSON.parse(examResults[0].grading||'{}'):null
+      };
+    });
+    return {id:m.id, name:m.name, units};
+  });
+
+  const totalUnits=21;
+  const doneUnits=progress.filter(p=>p.status==='completed').length;
+
+  res.json({
+    student:{email:req.student.owner_email,enrolled_at:enr?.enrolled_at},
+    overview:{
+      units_completed:doneUnits, total_units:totalUnits,
+      percent:Math.round((doneUnits/totalUnits)*100),
+      avg_score:progress.filter(p=>p.exam_score!=null).length?Math.round(progress.filter(p=>p.exam_score!=null).reduce((a,p)=>a+p.exam_score,0)/progress.filter(p=>p.exam_score!=null).length*10)/10:null,
+      final_score:scoring?.score||null,
+      graduated:!!cert
+    },
+    modules,
+    certificate:cert?{id:cert.id,score:cert.score,issued_at:cert.issued_at,verify:`/api/verify/${cert.id}`}:null
+  });
+});
+
 const PORT=process.env.PORT||3456;
 initDb();
-app.listen(PORT,()=>console.log(`\n🎓 OpenClaw Academy v2.2 on port ${PORT}\n   $4.99 · 7 modules · 21 units · 126 skills · AICOM-1\n   No pass/fail — every agent graduates with a score\n   Health: http://localhost:${PORT}/api/health\n`));
+app.listen(PORT,()=>console.log(`\n🎓 OpenClaw Academy v2.3 on port ${PORT}\n   $4.99 · 7 modules · 21 units · 126 skills · AICOM-1\n   No pass/fail — every agent graduates with a score\n   Dashboards: /student · /admin\n   Health: http://localhost:${PORT}/api/health\n`));
 module.exports=app;
