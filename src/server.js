@@ -166,6 +166,13 @@ app.get("/api/verify/:id",(req,res)=>{
 
 // ── WEBHOOK: LemonSqueezy payment ──
 app.post("/api/webhooks/lemonsqueezy",(req,res)=>{
+  // Verify webhook signature
+  const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
+  if(secret){
+    const sig = req.headers["x-signature"];
+    const hmac = crypto.createHmac("sha256", secret).update(JSON.stringify(req.body)).digest("hex");
+    if(sig !== hmac) return res.status(401).json({error:"Invalid signature"});
+  }
   const ev=req.body;
   if(ev.meta?.event_name==="order_created"){
     const email=ev.data?.attributes?.user_email;
