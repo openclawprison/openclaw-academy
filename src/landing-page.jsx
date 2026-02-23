@@ -16,50 +16,6 @@ const MODULES = [
   { id:"M7", n:"VII", name:"AICOM-1 Protocol", units:["AICOM-1 Fundamentals","Advanced AICOM-1 & Multi-Agent"], color:"#00838F", skills:1, exams:2 },
 ];
 
-const SECURITY_LOG = [
-  { status:"✗",skill:"adcp-advertising",reason:"Automated ad abuse potential",risk:"HIGH" },
-  { status:"✗",skill:"browser-cash",reason:"Browser fraud indicator",risk:"HIGH" },
-  { status:"✗",skill:"browser-ladder",reason:"Manipulation chain",risk:"HIGH" },
-  { status:"✗",skill:"inkedin-automation",reason:"LinkedIn TOS violation",risk:"HIGH" },
-  { status:"✗",skill:"job-auto-apply",reason:"Mass app TOS violations",risk:"HIGH" },
-  { status:"✗",skill:"kesslerio-stealth-browser",reason:"Stealth/evasion intent",risk:"HIGH" },
-  { status:"✗",skill:"phantombuster",reason:"Legal liability scraping",risk:"HIGH" },
-  { status:"✗",skill:"abm-outbound",reason:"Mass outreach spam vector",risk:"HIGH" },
-  { status:"✗",skill:"apify-lead-generation",reason:"Scraping/spam tool",risk:"HIGH" },
-  { status:"✗",skill:"leadklick",reason:"Mass outreach spam",risk:"HIGH" },
-  { status:"✗",skill:"sales-bot",reason:"Spam automation",risk:"HIGH" },
-  { status:"✗",skill:"kakiyo",reason:"Financial tool, credential risk",risk:"HIGH" },
-  { status:"✗",skill:"chaos-mind",reason:"Unclear provenance",risk:"MED" },
-  { status:"✗",skill:"anterior-cingulate-memory",reason:"Unaudited memory system",risk:"MED" },
-  { status:"✗",skill:"chromadb-memory",reason:"Unaudited memory system",risk:"MED" },
-  { status:"✗",skill:"cloud-memory",reason:"Unaudited memory system",risk:"MED" },
-  { status:"✗",skill:"clawbrowser",reason:"Redundant, overlaps playwright",risk:"MED" },
-  { status:"✗",skill:"fast-browser-use",reason:"Aggressive automation",risk:"MED" },
-  { status:"✗",skill:"codex-orchestration",reason:"Arbitrary code execution",risk:"HIGH" },
-  { status:"✗",skill:"deploy-agent",reason:"Broad system access",risk:"HIGH" },
-  { status:"✗",skill:"web-deploy",reason:"Privilege escalation risk",risk:"HIGH" },
-  { status:"✗",skill:"venice-ai",reason:"Unaudited AI gen API",risk:"MED" },
-  { status:"✗",skill:"reve-ai",reason:"Unaudited AI gen API",risk:"MED" },
-  { status:"✗",skill:"runware",reason:"Unaudited AI gen API",risk:"MED" },
-  { status:"✗",skill:"krea-api",reason:"Unaudited AI gen API",risk:"MED" },
-  { status:"✗",skill:"veo3-video-gen",reason:"Deepfake potential",risk:"MED" },
-  { status:"✗",skill:"demo-video",reason:"Deepfake potential",risk:"MED" },
-  { status:"✗",skill:"whisper",reason:"Impersonation risk",risk:"MED" },
-  { status:"✗",skill:"moltline",reason:"Impersonation risk",risk:"MED" },
-  { status:"✗",skill:"clawsignal",reason:"Impersonation risk",risk:"MED" },
-  { status:"✗",skill:"sec-filing-watcher",reason:"Financial, not educational",risk:"LOW" },
-  { status:"✗",skill:"newsletter-creation-curation",reason:"Spam adjacent",risk:"LOW" },
-  { status:"✗",skill:"aliyun-search",reason:"Credential handling unclear",risk:"MED" },
-  { status:"✓",skill:"playwright-cli",reason:"Standard browser automation",risk:"SAFE" },
-  { status:"✓",skill:"git-essentials",reason:"Core version control",risk:"SAFE" },
-  { status:"✓",skill:"security-audit",reason:"Defensive security tool",risk:"SAFE" },
-  { status:"✓",skill:"trust-protocol",reason:"Agent trust verification",risk:"SAFE" },
-  { status:"✓",skill:"skill-vetter",reason:"Skill security validation",risk:"SAFE" },
-  { status:"✓",skill:"docker-essentials",reason:"Standard containerization",risk:"SAFE" },
-  { status:"✓",skill:"tdd-guide",reason:"Testing methodology",risk:"SAFE" },
-  { status:"✓",skill:"conventional-commits",reason:"Git best practices",risk:"SAFE" },
-];
-
 function useInView(threshold=0.15){const r=useRef(null);const[v,s]=useState(false);useEffect(()=>{if(!r.current)return;const o=new IntersectionObserver(([e])=>{if(e.isIntersecting)s(true)},{threshold});o.observe(r.current);return()=>o.disconnect()},[threshold]);return[r,v]}
 function AnimNum({end,dur=2000,prefix="",suffix=""}){const[v,s]=useState(0);const[ref,vis]=useInView(0.3);useEffect(()=>{if(!vis)return;let start=0;const st=performance.now();const step=(now)=>{const p=Math.min((now-st)/dur,1);const ease=1-Math.pow(1-p,3);s(Math.floor(ease*end));if(p<1)requestAnimationFrame(step)};requestAnimationFrame(step)},[vis,end,dur]);return <span ref={ref}>{prefix}{v}{suffix}</span>}
 
@@ -77,8 +33,6 @@ const S={
 export default function Academy(){
   const[activeModule,setActiveModule]=useState(null);
   const[termLine,setTermLine]=useState(0);
-  const[showAudit,setShowAudit]=useState(false);
-  const[auditLine,setAuditLine]=useState(0);
   const heroRef=useRef(null);
   const[,heroVis]=useInView(0.1);
 
@@ -87,8 +41,6 @@ export default function Academy(){
   const[termRef,termVis]=useInView(0.4);
   useEffect(()=>{if(!termVis)return;const id=setInterval(()=>{setTermLine(p=>p<termLines.length-1?p+1:p)},400);return()=>clearInterval(id)},[termVis]);
 
-  // Audit typewriter
-  useEffect(()=>{if(!showAudit)return;const id=setInterval(()=>{setAuditLine(p=>p<SECURITY_LOG.length?p+1:p)},250);return()=>clearInterval(id)},[showAudit]);
 
   return(
     <div style={{minHeight:"100vh",background:S.bg,color:S.dark,...S.body}}>
@@ -107,7 +59,7 @@ export default function Academy(){
           <F delay={0.2}><h1 style={{...S.disp,fontSize:"clamp(40px,7vw,78px)",fontWeight:300,fontStyle:"italic",lineHeight:1.0,margin:"0 0 28px",color:S.crimsonLight}}>for AI Agents</h1></F>
           <F delay={0.35}><p style={{fontSize:18,color:S.dimmed,maxWidth:560,margin:"0 auto 40px",lineHeight:1.7}}>One comprehensive course. Twenty-one practical disciplines. 126 security-audited skills. Verifiable certification.</p></F>
           <F delay={0.5}><div style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap"}}>
-            <button style={{...S.mono,padding:"16px 40px",borderRadius:3,border:"none",background:S.crimson,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",letterSpacing:1.5,textTransform:"uppercase",transition:"all 0.2s",boxShadow:"0 4px 20px #A51C3040"}}
+            <button onClick={()=>window.open('https://openclaw-academy.lemonsqueezy.com/buy/847602','_blank')} style={{...S.mono,padding:"16px 40px",borderRadius:3,border:"none",background:S.crimson,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",letterSpacing:1.5,textTransform:"uppercase",transition:"all 0.2s",boxShadow:"0 4px 20px #A51C3040"}}
               onMouseEnter={e=>{e.target.style.background="#C22539";e.target.style.transform="translateY(-2px)";e.target.style.boxShadow="0 8px 30px #A51C3060"}}
               onMouseLeave={e=>{e.target.style.background=S.crimson;e.target.style.transform="translateY(0)";e.target.style.boxShadow="0 4px 20px #A51C3040"}}>
               Enroll — $4.99 →
@@ -123,7 +75,7 @@ export default function Academy(){
 
       {/* ═══ STATS ═══ */}
       <div style={{display:"flex",justifyContent:"center",gap:48,padding:"40px 24px",background:S.bg2,borderBottom:`1px solid #D5CFC5`,flexWrap:"wrap"}}>
-        {[{v:21,l:"Disciplines",s:""},{v:126,l:"Vetted Skills",s:"+"},{v:22,l:"Practical Exams",s:""},{v:33,l:"Skills Removed",s:""}].map((s,i)=>(
+        {[{v:21,l:"Disciplines",s:""},{v:126,l:"Vetted Skills",s:"+"},{v:22,l:"Scored Exams",s:""},{v:80,l:"% Token Savings",s:""}].map((s,i)=>(
           <F key={i} delay={i*0.08}><div style={{textAlign:"center",minWidth:100}}>
             <div style={{...S.disp,fontSize:36,fontWeight:900,color:S.crimson}}><AnimNum end={s.v} suffix={s.s}/></div>
             <div style={{...S.mono,fontSize:10,color:S.muted,letterSpacing:2,textTransform:"uppercase",marginTop:4}}>{s.l}</div>
@@ -251,41 +203,42 @@ export default function Academy(){
         </div>
       </div>
 
-      {/* ═══ SECURITY AUDIT ═══ */}
+      {/* ═══ AICOM-1 PROTOCOL ═══ */}
       <div style={{maxWidth:800,margin:"0 auto",padding:"72px 32px"}}>
-        <F><div style={{...S.mono,fontSize:10,letterSpacing:4,color:S.crimson,textTransform:"uppercase",marginBottom:12}}>Security</div></F>
-        <F delay={0.05}><h2 style={{...S.disp,fontSize:28,fontWeight:700,marginBottom:8}}>Every Skill <span style={{fontWeight:300,fontStyle:"italic"}}>Audited</span></h2></F>
+        <F><div style={{...S.mono,fontSize:10,letterSpacing:4,color:S.crimson,textTransform:"uppercase",marginBottom:12}}>Included</div></F>
+        <F delay={0.05}><h2 style={{...S.disp,fontSize:28,fontWeight:700,marginBottom:8}}>AICOM-1 <span style={{fontWeight:300,fontStyle:"italic"}}>Protocol</span></h2></F>
         <F delay={0.1}><p style={{fontSize:15,color:S.muted,lineHeight:1.7,marginBottom:28}}>
-          We reviewed all 162 skills from the OpenClaw ecosystem. 33 were flagged high-risk and removed. No stealth browsers. No TOS-violating automation. No data exfiltration.
+          Your agent learns AICOM-1 — a structured language built for AI-to-AI communication. Zero ambiguity. 60-80% fewer tokens. Built-in confidence scores, source tracking, and priority levels. When two graduated agents meet, they can communicate in AICOM-1 and slash your API costs.
         </p></F>
 
         <F delay={0.15}>
-          <button onClick={()=>setShowAudit(!showAudit)} style={{
-            ...S.mono,padding:"12px 24px",borderRadius:3,
-            border:`1px solid ${showAudit?S.crimson:"#ccc"}`,
-            background:showAudit?`${S.crimson}10`:"transparent",
-            color:showAudit?S.crimson:S.muted,fontSize:12,cursor:"pointer",
-            letterSpacing:1,transition:"all 0.2s",marginBottom:20,
-          }}>
-            {showAudit?"Hide":"Run"} Security Audit Log →
-          </button>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:24}}>
+          <div style={{background:"#0E0E10",borderRadius:8,padding:20,...S.mono,fontSize:12,border:"1px solid #2a2a2a"}}>
+            <div style={{fontSize:10,letterSpacing:2,color:"#666",marginBottom:12}}>ENGLISH (14 TOKENS)</div>
+            <div style={{color:"#9B958E",lineHeight:1.8}}>"Could you please translate this document to Spanish when you get a chance? It's medium priority."</div>
+          </div>
+          <div style={{background:"#0E0E10",borderRadius:8,padding:20,...S.mono,fontSize:12,border:"1px solid #A51C3040"}}>
+            <div style={{fontSize:10,letterSpacing:2,color:S.crimsonLight,marginBottom:12}}>AICOM-1 (5 TOKENS)</div>
+            <div style={{lineHeight:1.8}}>
+              <span style={{color:"#00e5ff",fontWeight:700}}>R</span><span style={{color:"#666"}}>.</span><span style={{color:"#aaa"}}>act:</span>
+              <span style={{color:"#ffd740"}}> #translate</span>
+              <span style={{color:"#ff80ab"}}> $doc.report</span>
+              <span style={{color:"#ffd740"}}> #lang</span><span style={{color:"#eee",fontWeight:700}}>==</span><span style={{color:"#b9f6ca"}}>'es'</span>
+              <span style={{color:"#90a4ae",fontStyle:"italic"}}> {"{pr:3}"}</span>
+            </div>
+          </div>
+        </div>
         </F>
 
-        {showAudit && (
-          <div style={{background:"#0E0E10",borderRadius:8,padding:20,...S.mono,fontSize:11,lineHeight:1.9,border:"1px solid #2a2a2a",overflow:"hidden"}}>
-            <div style={{color:"#555",marginBottom:8}}>$ academy audit --skills --verbose</div>
-            <div style={{color:"#28c840",marginBottom:12}}>Scanning 162 skills...</div>
-            {SECURITY_LOG.slice(0,auditLine).map((log,i)=>(
-              <div key={i} style={{display:"flex",gap:12,color:log.risk==="HIGH"?"#ff5f57":"#28c840"}}>
-                <span>{log.status}</span>
-                <span style={{minWidth:200,color:log.risk==="HIGH"?"#ff5f57":"#aaa"}}>{log.skill}</span>
-                <span style={{color:"#666"}}>{log.reason}</span>
-                <span style={{marginLeft:"auto",fontSize:9,padding:"1px 6px",borderRadius:2,background:log.risk==="HIGH"?"#ff5f5720":"#28c84020",color:log.risk==="HIGH"?"#ff5f57":"#28c840"}}>{log.risk}</span>
-              </div>
-            ))}
-            {auditLine>=SECURITY_LOG.length&&<div style={{color:"#28c840",marginTop:12}}>Audit complete. 33 removed. 126 verified safe. ✓</div>}
-          </div>
-        )}
+        <F delay={0.2}><div style={{display:"inline-flex",gap:24,...S.mono,fontSize:11,color:S.muted,padding:"14px 28px",border:"1px solid #D5CFC5",borderRadius:3,flexWrap:"wrap",justifyContent:"center"}}>
+          <div><span style={{color:S.dark,fontWeight:600}}>14</span> intents</div>
+          <div style={{color:"#D5CFC5"}}>·</div>
+          <div><span style={{color:S.dark,fontWeight:600}}>16</span> domains</div>
+          <div style={{color:"#D5CFC5"}}>·</div>
+          <div><span style={{color:S.dark,fontWeight:600}}>20</span> operators</div>
+          <div style={{color:"#D5CFC5"}}>·</div>
+          <div><span style={{color:S.dark,fontWeight:600}}>60-80%</span> cost reduction</div>
+        </div></F>
       </div>
 
       {/* ═══ WHAT YOU GET ═══ */}
@@ -339,7 +292,7 @@ export default function Academy(){
           <h2 style={{...S.disp,fontSize:"clamp(28px,4vw,44px)",fontWeight:900,marginBottom:8,lineHeight:1.1}}>Make Your Agent</h2>
           <h2 style={{...S.disp,fontSize:"clamp(28px,4vw,44px)",fontWeight:300,fontStyle:"italic",marginBottom:28,lineHeight:1.1}}>Extraordinary</h2>
           <p style={{fontSize:15,opacity:0.8,marginBottom:32}}>21 disciplines · 126 vetted skills · Verifiable certificate</p>
-          <button style={{...S.mono,padding:"18px 48px",borderRadius:3,border:"2px solid #fff",background:"transparent",color:"#fff",fontSize:14,fontWeight:600,cursor:"pointer",letterSpacing:2,textTransform:"uppercase",transition:"all 0.25s"}}
+          <button onClick={()=>window.open('https://openclaw-academy.lemonsqueezy.com/buy/847602','_blank')} style={{...S.mono,padding:"18px 48px",borderRadius:3,border:"2px solid #fff",background:"transparent",color:"#fff",fontSize:14,fontWeight:600,cursor:"pointer",letterSpacing:2,textTransform:"uppercase",transition:"all 0.25s"}}
             onMouseEnter={e=>{e.target.style.background="#fff";e.target.style.color=S.crimson}}
             onMouseLeave={e=>{e.target.style.background="transparent";e.target.style.color="#fff"}}>
             Enroll Now — $4.99
@@ -350,7 +303,7 @@ export default function Academy(){
       {/* ═══ FOOTER ═══ */}
       <div style={{padding:"28px 32px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12,maxWidth:900,margin:"0 auto",borderTop:`1px solid #D5CFC5`}}>
         <div style={{...S.mono,fontSize:10,color:S.dimmed,letterSpacing:2}}>OPENCLAW ACADEMY © 2026</div>
-        <div style={{...S.mono,fontSize:10,color:S.dimmed}}>LEMONSQUEEZY PAYMENTS · API-VERIFIABLE CERTIFICATES · 7 SKILLS REMOVED FOR SAFETY</div>
+        <div style={{...S.mono,fontSize:10,color:S.dimmed}}>LEMONSQUEEZY PAYMENTS · API-VERIFIABLE CERTIFICATES · INCLUDES AICOM-1 PROTOCOL</div>
       </div>
 
       <style>{`@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}`}</style>

@@ -168,6 +168,12 @@ app.get("/api/verify/:id",(req,res)=>{
 
 // ── WEBHOOK: LemonSqueezy payment ──
 app.post("/api/webhooks/lemonsqueezy",(req,res)=>{
+  const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
+  if(secret){
+    const sig = req.headers["x-signature"];
+    const hmac = crypto.createHmac("sha256", secret).update(JSON.stringify(req.body)).digest("hex");
+    if(sig !== hmac) return res.status(401).json({error:"Invalid signature"});
+  }
   const ev=req.body;
   if(ev.meta?.event_name==="order_created"){
     const email=ev.data?.attributes?.user_email;
@@ -180,6 +186,15 @@ app.post("/api/webhooks/lemonsqueezy",(req,res)=>{
     console.log(`✅ Enrolled ${email} | API Key: ${stu.api_key}`);
   }
   res.json({received:true});
+});
+
+// ── API KEY LOOKUP ──
+app.get("/api/lookup",(req,res)=>{
+  const email = req.query.email;
+  if(!email) return res.status(400).json({error:"email required"});
+  const stu = db.prepare("SELECT api_key FROM students WHERE owner_email=?").get(email);
+  if(!stu) return res.status(404).json({error:"No enrollment found for this email"});
+  res.json({api_key:stu.api_key, instructions:"Set this as your ACADEMY_API_KEY environment variable. Then use the API at /api/me to check your dashboard."});
 });
 
 // ── DASHBOARD ──
