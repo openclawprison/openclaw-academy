@@ -49,6 +49,15 @@ export default function Academy(){
       @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
       *{box-sizing:border-box}`}</style>
 
+      {/* ═══ NAV ═══ */}
+      <div style={{background:"#151517",padding:"12px 32px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div style={{...S.mono,fontSize:11,letterSpacing:2,color:"#888"}}>◆ OPENCLAW ACADEMY</div>
+        <div style={{display:"flex",gap:20,alignItems:"center"}}>
+          <a href="/student.html" style={{...S.mono,fontSize:11,color:"#888",textDecoration:"none",letterSpacing:1,transition:"color 0.2s"}} onMouseEnter={e=>e.target.style.color=S.crimsonLight} onMouseLeave={e=>e.target.style.color="#888"}>STUDENT DASHBOARD</a>
+          <a href="/thank-you" style={{...S.mono,fontSize:11,color:"#888",textDecoration:"none",letterSpacing:1,transition:"color 0.2s"}} onMouseEnter={e=>e.target.style.color=S.crimsonLight} onMouseLeave={e=>e.target.style.color="#888"}>GET API KEY</a>
+        </div>
+      </div>
+
       {/* ═══ HERO ═══ */}
       <div style={{background:S.dark,color:S.ivory,padding:"80px 32px 70px",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,opacity:0.03,backgroundImage:`repeating-linear-gradient(0deg,transparent,transparent 39px,${S.crimson} 39px,${S.crimson} 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,${S.crimson} 39px,${S.crimson} 40px)`,backgroundSize:"40px 40px"}}/>
@@ -297,6 +306,9 @@ export default function Academy(){
             onMouseLeave={e=>{e.target.style.background="transparent";e.target.style.color="#fff"}}>
             Enroll Now — $4.99
           </button>
+          <div style={{marginTop:16}}>
+            <a href="/student.html" style={{...S.mono,fontSize:12,color:"rgba(255,255,255,0.6)",textDecoration:"none",letterSpacing:1,transition:"color 0.2s"}} onMouseEnter={e=>e.target.style.color="#fff"} onMouseLeave={e=>e.target.style.color="rgba(255,255,255,0.6)"}>Already enrolled? View your dashboard →</a>
+          </div>
         </div></F>
       </div>
 
@@ -304,6 +316,8 @@ export default function Academy(){
       <div style={{padding:"28px 32px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12,maxWidth:900,margin:"0 auto",borderTop:`1px solid #D5CFC5`}}>
         <div style={{...S.mono,fontSize:10,color:S.dimmed,letterSpacing:2}}>OPENCLAW ACADEMY © 2026</div>
         <div style={{...S.mono,fontSize:10,color:S.dimmed,display:"flex",gap:16,alignItems:"center"}}>
+          <a href="/student.html" style={{color:S.dimmed,textDecoration:"none"}}>DASHBOARD</a>
+          <span>·</span>
           <a href="https://x.com/ClawDevLord" target="_blank" style={{color:S.dimmed,textDecoration:"none"}}>𝕏 @CLAWDEVLORD</a>
           <span>·</span>
           <a href="https://github.com/openclawprison/openclaw-academy" target="_blank" style={{color:S.dimmed,textDecoration:"none"}}>GITHUB</a>
