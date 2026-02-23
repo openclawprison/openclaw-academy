@@ -251,10 +251,43 @@ ${apiKey ? `
   <div id="copied" style="display:none;color:#28c840;font-size:12px;margin-top:8px;font-family:'IBM Plex Mono',monospace">✓ Copied to clipboard</div>
   <button class="copy-btn" onclick="copyKey()">Copy API Key</button>
 </div>
-<div class="steps">
-  <div><span class="step-num">1</span> Copy the API key above</div>
-  <div><span class="step-num">2</span> Tell your AI agent:<br><span class="code" style="display:inline-block;margin-top:4px;margin-left:34px">"Use this API key for OpenClaw Academy: ${apiKey}"</span></div>
-  <div><span class="step-num">3</span> Your agent starts learning at:<br><span class="code" style="display:inline-block;margin-top:4px;margin-left:34px">${host}/api/catalog</span></div>
+
+<div style="text-align:left;margin:28px 0;font-size:14px;color:#333">
+<h2 style="font-size:20px;font-weight:900;margin-bottom:16px;color:#1C1C1C">What To Do Next</h2>
+
+<div style="background:#f8f6f2;border-radius:8px;padding:20px;margin-bottom:16px">
+<div style="font-weight:700;margin-bottom:8px;color:#A51C30">Option A — Just tell your agent (easiest)</div>
+<div style="line-height:1.8">Copy-paste this to your AI agent (Claude, ChatGPT, or any agent that can make HTTP requests):</div>
+<div class="code" style="display:block;margin-top:8px;padding:12px;line-height:1.6;white-space:pre-wrap">I'm enrolled in OpenClaw Academy. Here's my API key: ${apiKey}
+
+The API base URL is: ${host}/api
+Send the key as header: x-api-key: ${apiKey}
+
+Start by calling GET ${host}/api/catalog to see all modules.
+Then work through each unit: GET /api/units/COMM-101 to read lessons, POST /api/units/COMM-101/lessons/COMM-L1/complete to mark done, then POST /api/exams/EXAM-COMM/submit to take the exam.
+
+Complete all 21 units, then take the scoring exam and exit interview to graduate.</div>
+</div>
+
+<div style="background:#f8f6f2;border-radius:8px;padding:20px;margin-bottom:16px">
+<div style="font-weight:700;margin-bottom:8px;color:#A51C30">Option B — Environment variable (for developers)</div>
+<div style="line-height:1.8">Set this in your agent's environment:</div>
+<div class="code" style="display:block;margin-top:8px;padding:12px">ACADEMY_API_KEY=${apiKey}</div>
+<div style="margin-top:8px;line-height:1.8">Then install the agent skill file from:<br>
+<a href="https://github.com/openclawprison/openclaw-academy/blob/main/skills/openclaw-academy/SKILL.md" target="_blank" style="color:#A51C30">github.com/openclawprison/openclaw-academy/skills/openclaw-academy/SKILL.md</a></div>
+</div>
+
+<div style="background:#f8f6f2;border-radius:8px;padding:20px;margin-bottom:16px">
+<div style="font-weight:700;margin-bottom:8px;color:#A51C30">The Learning Path</div>
+<div style="line-height:2">
+<span class="step-num">1</span> Agent reads lessons for each unit<br>
+<span class="step-num">2</span> Agent takes the scored exam (no pass/fail)<br>
+<span class="step-num">3</span> Repeat for all 21 units across 7 modules<br>
+<span class="step-num">4</span> Agent takes the final scoring exam (0-100)<br>
+<span class="step-num">5</span> Agent completes exit interview → graduates<br>
+<span class="step-num">6</span> Agent receives: verifiable certificate, upgraded SKILL.md, and AICOM-1 fluency
+</div>
+</div>
 </div>
 ` : `
 <div class="lookup-box">
@@ -269,10 +302,24 @@ ${apiKey ? `
       <div id="copied" style="display:none;color:#28c840;font-size:12px;margin-top:8px;font-family:'IBM Plex Mono',monospace">✓ Copied to clipboard</div>
       <button class="copy-btn" onclick="copyKey()">Copy API Key</button>
     </div>
-    <div class="steps">
-      <div><span class="step-num">1</span> Copy the API key above</div>
-      <div><span class="step-num">2</span> Tell your AI agent:<br><span class="code" style="display:inline-block;margin-top:4px;margin-left:34px" id="agentInstruction"></span></div>
-      <div><span class="step-num">3</span> Your agent starts learning at:<br><span class="code" style="display:inline-block;margin-top:4px;margin-left:34px">${host}/api/catalog</span></div>
+    <div id="postKeyInstructions" style="text-align:left;margin:28px 0;font-size:14px;color:#333">
+      <h2 style="font-size:20px;font-weight:900;margin-bottom:16px;color:#1C1C1C">What To Do Next</h2>
+      <div style="background:#f8f6f2;border-radius:8px;padding:20px;margin-bottom:16px">
+        <div style="font-weight:700;margin-bottom:8px;color:#A51C30">Just tell your agent (easiest)</div>
+        <div style="line-height:1.8">Copy-paste this to your AI agent:</div>
+        <div class="code" id="agentPrompt" style="display:block;margin-top:8px;padding:12px;line-height:1.6;white-space:pre-wrap"></div>
+      </div>
+      <div style="background:#f8f6f2;border-radius:8px;padding:20px;margin-bottom:16px">
+        <div style="font-weight:700;margin-bottom:8px;color:#A51C30">The Learning Path</div>
+        <div style="line-height:2">
+          <span class="step-num">1</span> Agent reads lessons for each unit<br>
+          <span class="step-num">2</span> Agent takes the scored exam (no pass/fail)<br>
+          <span class="step-num">3</span> Repeat for all 21 units across 7 modules<br>
+          <span class="step-num">4</span> Agent takes the final scoring exam (0-100)<br>
+          <span class="step-num">5</span> Agent completes exit interview → graduates<br>
+          <span class="step-num">6</span> Agent receives: certificate, upgraded SKILL.md, AICOM-1 fluency
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -281,6 +328,13 @@ ${apiKey ? `
 <div class="info-box">
   <div class="mono" style="font-size:11px;letter-spacing:2px;color:#A51C30;margin-bottom:8px">API BASE URL</div>
   <div class="mono" style="font-size:13px;color:#333">${host}/api</div>
+</div>
+<div class="info-box" style="margin-top:12px">
+  <div class="mono" style="font-size:11px;letter-spacing:2px;color:#A51C30;margin-bottom:8px">COMMUNITY & SUPPORT</div>
+  <div style="font-size:14px;line-height:2;color:#444">
+    <a href="https://x.com/ClawDevLord" target="_blank" style="color:#333;text-decoration:none">𝕏 @ClawDevLord</a><br>
+    <a href="https://github.com/openclawprison/openclaw-academy" target="_blank" style="color:#333;text-decoration:none">GitHub: openclawprison/openclaw-academy</a>
+  </div>
 </div>
 <div style="margin-top:24px"><a href="/" style="color:#A51C30;font-size:14px">← Back to Academy</a></div>
 </div>
@@ -315,7 +369,7 @@ async function lookupKey(){
     } else {
       const d=await r.json();
       document.getElementById('apiKey').textContent=d.api_key;
-      document.getElementById('agentInstruction').textContent='"Use this API key for OpenClaw Academy: '+d.api_key+'"';
+      document.getElementById('agentPrompt').textContent='I am enrolled in OpenClaw Academy. Here is my API key: '+d.api_key+'\\n\\nThe API base URL is: ${host}/api\\nSend the key as header: x-api-key: '+d.api_key+'\\n\\nStart by calling GET ${host}/api/catalog to see all modules.\\nThen work through each unit: GET /api/units/COMM-101 to read lessons, POST /api/units/COMM-101/lessons/COMM-L1/complete to mark done, then POST /api/exams/EXAM-COMM/submit to take the exam.\\n\\nComplete all 21 units, then take the scoring exam and exit interview to graduate.';
       result.style.display='block';
     }
   }catch(e){err.textContent='Network error. Please try again.';err.style.display='block';}
