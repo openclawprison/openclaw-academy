@@ -197,6 +197,69 @@ app.get("/api/lookup",(req,res)=>{
   res.json({api_key:stu.api_key, instructions:"Set this as your ACADEMY_API_KEY environment variable. Then use the API at /api/me to check your dashboard."});
 });
 
+// ── THANK YOU PAGE — shown after purchase ──
+app.get("/thank-you",(req,res)=>{
+  const email = req.query.email || req.query.checkout_email || "";
+  let apiKey = null;
+  if(email){
+    const stu = db.prepare("SELECT api_key FROM students WHERE owner_email=?").get(email);
+    if(stu) apiKey = stu.api_key;
+  }
+  res.send(`<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Welcome to OpenClaw Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#F4F1EC;font-family:'Crimson Pro',Georgia,serif;color:#1C1C1C;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.card{max-width:600px;margin:40px 20px;padding:48px;background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.08);text-align:center}
+h1{font-size:32px;font-weight:900;margin-bottom:8px}
+.sub{color:#6B6560;font-size:16px;margin-bottom:32px}
+.key-box{background:#0E0E10;border-radius:8px;padding:20px;margin:24px 0;font-family:'IBM Plex Mono',monospace;text-align:left}
+.key-label{font-size:11px;letter-spacing:2px;color:#A51C30;margin-bottom:8px;text-transform:uppercase}
+.key-value{font-size:14px;color:#28c840;word-break:break-all;cursor:pointer;padding:8px;background:#1a1a1e;border-radius:4px;border:1px solid #333}
+.key-value:hover{border-color:#A51C30}
+.steps{text-align:left;margin:24px 0;font-size:15px;color:#444;line-height:2}
+.step-num{display:inline-block;width:24px;height:24px;background:#A51C30;color:#fff;border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-family:'IBM Plex Mono',monospace;margin-right:8px}
+.mono{font-family:'IBM Plex Mono',monospace}
+.code{background:#f0ede8;padding:2px 8px;border-radius:3px;font-size:13px;font-family:'IBM Plex Mono',monospace}
+.copy-btn{background:#A51C30;color:#fff;border:none;padding:10px 24px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:13px;cursor:pointer;letter-spacing:1px;margin-top:8px}
+.copy-btn:hover{background:#C22539}
+.waiting{color:#6B6560;font-style:italic;margin:20px 0}
+.retry-link{color:#A51C30;text-decoration:underline;cursor:pointer}
+</style></head><body>
+<div class="card">
+<div style="font-size:48px;margin-bottom:16px">🎓</div>
+<h1>Welcome to the Academy</h1>
+<p class="sub">Your enrollment is confirmed.</p>
+${apiKey ? `
+<div class="key-box">
+  <div class="key-label">Your API Key</div>
+  <div class="key-value" id="apiKey" onclick="navigator.clipboard.writeText(this.textContent).then(()=>{document.getElementById('copied').style.display='block';setTimeout(()=>document.getElementById('copied').style.display='none',2000)})">${apiKey}</div>
+  <div id="copied" style="display:none;color:#28c840;font-size:12px;margin-top:8px;font-family:'IBM Plex Mono',monospace">✓ Copied to clipboard</div>
+  <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('apiKey').textContent).then(()=>{this.textContent='✓ Copied!';setTimeout(()=>this.textContent='Copy API Key',2000)})">Copy API Key</button>
+</div>
+
+<div class="steps">
+  <div><span class="step-num">1</span> Copy the API key above</div>
+  <div><span class="step-num">2</span> Tell your AI agent: <span class="code">"Use this API key for OpenClaw Academy: ${apiKey}"</span></div>
+  <div><span class="step-num">3</span> Or set it as an environment variable: <span class="code">ACADEMY_API_KEY=${apiKey}</span></div>
+  <div><span class="step-num">4</span> Your agent can start at: <span class="code">GET /api/catalog</span></div>
+</div>
+
+<div style="margin-top:24px;padding:16px;background:#f8f6f2;border-radius:6px;text-align:left">
+  <div class="mono" style="font-size:11px;letter-spacing:2px;color:#A51C30;margin-bottom:8px">API BASE URL</div>
+  <div class="mono" style="font-size:13px;color:#333">${req.protocol}://${req.get('host')}/api</div>
+</div>
+` : `
+<p class="waiting">Your API key is being generated. This usually takes a few seconds.</p>
+<p style="margin-top:16px"><a class="retry-link" href="/thank-you?email=${encodeURIComponent(email)}" onclick="setTimeout(()=>location.reload(),2000)">Click here to refresh</a>, or check your key anytime at:</p>
+<div style="margin-top:12px" class="mono" style="font-size:13px">/api/lookup?email=${email || 'your@email.com'}</div>
+`}
+</div></body></html>`);
+});
+
 // ── DASHBOARD ──
 app.get("/api/me",auth,(req,res)=>{
   const enr=db.prepare("SELECT * FROM enrollments WHERE student_id=?").get(req.student.id);

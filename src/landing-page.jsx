@@ -59,12 +59,12 @@ export default function Academy(){
           <F delay={0.2}><h1 style={{...S.disp,fontSize:"clamp(40px,7vw,78px)",fontWeight:300,fontStyle:"italic",lineHeight:1.0,margin:"0 0 28px",color:S.crimsonLight}}>for AI Agents</h1></F>
           <F delay={0.35}><p style={{fontSize:18,color:S.dimmed,maxWidth:560,margin:"0 auto 40px",lineHeight:1.7}}>One comprehensive course. Twenty-one practical disciplines. 126 security-audited skills. Verifiable certification.</p></F>
           <F delay={0.5}><div style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap"}}>
-            <button onClick={()=>window.open('https://openclaw-academy.lemonsqueezy.com/buy/847602','_blank')} style={{...S.mono,padding:"16px 40px",borderRadius:3,border:"none",background:S.crimson,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",letterSpacing:1.5,textTransform:"uppercase",transition:"all 0.2s",boxShadow:"0 4px 20px #A51C3040"}}
+            <button onClick={()=>window.open('https://openclaw-academy.lemonsqueezy.com/buy/1335503','_blank')} style={{...S.mono,padding:"16px 40px",borderRadius:3,border:"none",background:S.crimson,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",letterSpacing:1.5,textTransform:"uppercase",transition:"all 0.2s",boxShadow:"0 4px 20px #A51C3040"}}
               onMouseEnter={e=>{e.target.style.background="#C22539";e.target.style.transform="translateY(-2px)";e.target.style.boxShadow="0 8px 30px #A51C3060"}}
               onMouseLeave={e=>{e.target.style.background=S.crimson;e.target.style.transform="translateY(0)";e.target.style.boxShadow="0 4px 20px #A51C3040"}}>
               Enroll — $4.99 →
             </button>
-            <button style={{...S.mono,padding:"16px 40px",borderRadius:3,border:`1px solid #444`,background:"transparent",color:S.dimmed,fontSize:13,fontWeight:400,cursor:"pointer",letterSpacing:1.5,textTransform:"uppercase",transition:"all 0.2s"}}
+            <button onClick={()=>document.getElementById('curriculum').scrollIntoView({behavior:'smooth'})} style={{...S.mono,padding:"16px 40px",borderRadius:3,border:`1px solid #444`,background:"transparent",color:S.dimmed,fontSize:13,fontWeight:400,cursor:"pointer",letterSpacing:1.5,textTransform:"uppercase",transition:"all 0.2s"}}
               onMouseEnter={e=>{e.target.style.borderColor=S.crimsonLight;e.target.style.color=S.ivory}}
               onMouseLeave={e=>{e.target.style.borderColor="#444";e.target.style.color=S.dimmed}}>
               View Curriculum
@@ -97,7 +97,7 @@ export default function Academy(){
       </div>
 
       {/* ═══ INTERACTIVE CURRICULUM EXPLORER ═══ */}
-      <div style={{background:S.dark,color:S.ivory,padding:"72px 32px",borderTop:`4px solid ${S.crimson}`}}>
+      <div id="curriculum" style={{background:S.dark,color:S.ivory,padding:"72px 32px",borderTop:`4px solid ${S.crimson}`}}>
         <div style={{maxWidth:1000,margin:"0 auto"}}>
           <F><div style={{...S.mono,fontSize:10,letterSpacing:4,color:S.crimsonLight,textTransform:"uppercase",marginBottom:12,textAlign:"center"}}>Interactive Curriculum</div></F>
           <F delay={0.1}><h2 style={{...S.disp,fontSize:32,fontWeight:700,textAlign:"center",marginBottom:8}}>7 Modules. 21 Units.</h2></F>
@@ -292,7 +292,7 @@ export default function Academy(){
           <h2 style={{...S.disp,fontSize:"clamp(28px,4vw,44px)",fontWeight:900,marginBottom:8,lineHeight:1.1}}>Make Your Agent</h2>
           <h2 style={{...S.disp,fontSize:"clamp(28px,4vw,44px)",fontWeight:300,fontStyle:"italic",marginBottom:28,lineHeight:1.1}}>Extraordinary</h2>
           <p style={{fontSize:15,opacity:0.8,marginBottom:32}}>21 disciplines · 126 vetted skills · Verifiable certificate</p>
-          <button onClick={()=>window.open('https://openclaw-academy.lemonsqueezy.com/buy/847602','_blank')} style={{...S.mono,padding:"18px 48px",borderRadius:3,border:"2px solid #fff",background:"transparent",color:"#fff",fontSize:14,fontWeight:600,cursor:"pointer",letterSpacing:2,textTransform:"uppercase",transition:"all 0.25s"}}
+          <button onClick={()=>window.open('https://openclaw-academy.lemonsqueezy.com/buy/1335503','_blank')} style={{...S.mono,padding:"18px 48px",borderRadius:3,border:"2px solid #fff",background:"transparent",color:"#fff",fontSize:14,fontWeight:600,cursor:"pointer",letterSpacing:2,textTransform:"uppercase",transition:"all 0.25s"}}
             onMouseEnter={e=>{e.target.style.background="#fff";e.target.style.color=S.crimson}}
             onMouseLeave={e=>{e.target.style.background="transparent";e.target.style.color="#fff"}}>
             Enroll Now — $4.99
