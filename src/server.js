@@ -16,9 +16,9 @@ app.use(express.json({ limit: "5mb" }));
 let db;
 function initDb() {
   const Database = require("better-sqlite3");
-  const dbPath = process.env.NODE_ENV === 'production'
-    ? '/opt/render/project/src/academy.db'
-    : './academy.db';
+ const dbPath = process.env.NODE_ENV === 'production'
+  ? '/data/academy.db'
+  : './academy.db';
   db = new Database(dbPath);
   db.pragma("journal_mode = WAL");
   db.exec(`
