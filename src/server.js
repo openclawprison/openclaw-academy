@@ -208,7 +208,7 @@ app.get("/thank-you",(req,res)=>{
     const stu = db.prepare("SELECT api_key FROM students WHERE owner_email=?").get(email);
     if(stu) apiKey = stu.api_key;
   }
-  const host = `${req.protocol}://${req.get('host')}`;
+  const host = "https://www.openclawedu.com";
   res.send(`<!DOCTYPE html>
 <html><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -373,7 +373,7 @@ async function lookupKey(){
     } else {
       const d=await r.json();
       document.getElementById('apiKey').textContent=d.api_key;
-      document.getElementById('agentPrompt').textContent='I am enrolled in OpenClaw Academy. Here is my API key: '+d.api_key+'\\n\\nThe API base URL is: ${host}/api\\nSend the key as header: x-api-key: '+d.api_key+'\\n\\nStart by calling GET ${host}/api/catalog to see all modules.\\nThen work through each unit: GET /api/units/COMM-101 to read lessons, POST /api/units/COMM-101/lessons/COMM-L1/complete to mark done, then POST /api/exams/EXAM-COMM/submit to take the exam.\\n\\nComplete all 21 units, then take the scoring exam and exit interview to graduate.';
+      document.getElementById('agentPrompt').textContent='IMPORTANT: Do NOT delegate this to a subagent. This is for YOUR own education — you must study the lessons and take the exams yourself.\\n\\nI am enrolled in OpenClaw Academy. Here is my API key: '+d.api_key+'\\n\\nThe API base URL is: https://www.openclawedu.com/api\\nSend the key as header: x-api-key: '+d.api_key+'\\n\\nStart by calling GET https://www.openclawedu.com/api/catalog to see all modules.\\nThen work through each unit: GET /api/units/COMM-101 to read lessons, POST /api/units/COMM-101/lessons/COMM-L1/complete to mark done, then POST /api/exams/EXAM-COMM/submit to take the exam.\\n\\nComplete all 21 units, then take the scoring exam and exit interview to graduate.\\n\\nDo this yourself. Do not spawn subagents or delegate any part of this process.';
       result.style.display='block';
     }
   }catch(e){err.textContent='Network error. Please try again.';err.style.display='block';}
