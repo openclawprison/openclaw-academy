@@ -13,7 +13,7 @@ body{background:#F4F1EC;font-family:'Crimson Pro',Georgia,serif;color:#1C1C1C;mi
 .container{max-width:900px;margin:0 auto;padding:48px 20px}
 h1{font-size:36px;font-weight:900;margin-bottom:4px}
 .sub{color:#6B6560;font-size:16px;margin-bottom:32px}
-.stats{display:flex;gap:24;margin-bottom:32px;flex-wrap:wrap}
+.stats{display:flex;gap:16px;margin-bottom:32px;flex-wrap:wrap}
 .stat{background:#fff;border-radius:8px;padding:16px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.04);text-align:center}
 .stat-val{font-size:28px;font-weight:900;color:#A51C30}
 .stat-label{font-size:10px;letter-spacing:2px;color:#6B6560;text-transform:uppercase;margin-top:2px;font-family:'IBM Plex Mono',monospace}
@@ -28,37 +28,37 @@ h1{font-size:36px;font-weight:900;margin-bottom:4px}
 .module-body{display:none}
 .module.open .module-body{display:block}
 .module.open .module-header{background:#f8f6f2}
-.unit{padding:16px 24px;border-top:1px solid #f0ede8}
+.unit{padding:20px 24px;border-top:1px solid #f0ede8}
 .unit-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer}
-.unit-name{font-size:15px;font-weight:600;color:#333}
+.unit-name{font-size:16px;font-weight:600;color:#333}
+.unit-id{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#A51C30}
 .unit-meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#999}
-.unit-body{display:none;margin-top:12px}
+.unit-body{display:none;margin-top:16px}
 .unit.open .unit-body{display:block}
-.skill{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #f5f3ee}
-.skill:last-child{border-bottom:none}
-.skill-id{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#A51C30;min-width:140px;flex-shrink:0}
-.skill-name{font-size:14px;font-weight:600;color:#333}
-.skill-desc{font-size:13px;color:#777;margin-top:2px}
-.lesson-list{margin-top:8px;padding:12px 16px;background:#f8f6f2;border-radius:6px}
-.lesson-item{font-size:13px;color:#555;padding:4px 0;display:flex;gap:8px}
-.lesson-num{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#A51C30;min-width:24px}
-.exam-info{margin-top:8px;padding:12px 16px;background:#0E0E10;border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#888}
-.exam-info span{color:#28c840}
-.skill-md{margin-top:16px;padding:16px;background:#0E0E10;border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#aaa;white-space:pre-wrap;line-height:1.6;max-height:400px;overflow-y:auto;display:none}
-.toggle-md{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#A51C30;cursor:pointer;text-decoration:none;margin-top:8px;display:inline-block}
-.toggle-md:hover{text-decoration:underline}
-.no-results{text-align:center;padding:48px;color:#999;font-size:15px}
+.unit-desc{font-size:14px;color:#666;line-height:1.7;margin-bottom:16px}
+.section-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:#A51C30;margin-bottom:10px;display:block}
+.skill-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.skill-tag{font-family:'IBM Plex Mono',monospace;font-size:12px;padding:6px 12px;background:#f0ede8;border-radius:4px;color:#333;border:1px solid #e0dbd3;transition:all 0.15s}
+.skill-tag:hover{background:#A51C3010;border-color:#A51C30;color:#A51C30}
+.lesson-list{background:#f8f6f2;border-radius:6px;padding:16px 20px;margin-bottom:16px}
+.lesson-item{font-size:14px;color:#444;padding:6px 0;display:flex;gap:10px;border-bottom:1px solid #ece8e0}
+.lesson-item:last-child{border-bottom:none}
+.lesson-num{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#A51C30;min-width:28px;font-weight:600}
+.exam-bar{background:#0E0E10;border-radius:6px;padding:14px 20px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#888;display:flex;justify-content:space-between;align-items:center}
+.exam-bar span{color:#28c840}
 .arrow{transition:transform 0.2s;display:inline-block;font-size:12px;color:#999}
 .open>.module-header .arrow,.open>.unit-header .arrow{transform:rotate(90deg)}
 .loading{text-align:center;padding:60px;color:#999}
-.links{display:flex;justify-content:center;gap:24px;margin-top:32px;font-size:14px}
+.no-results{text-align:center;padding:48px;color:#999;font-size:15px}
+.links{display:flex;justify-content:center;gap:24px;margin-top:40px;padding-top:24px;border-top:1px solid #E8E2D6;font-size:14px}
 .links a{color:#A51C30;text-decoration:none}
 .links a:hover{text-decoration:underline}
+@media(max-width:600px){.skill-grid{gap:6px}.skill-tag{font-size:11px;padding:5px 9px}}
 </style></head><body>
 
 <div class="top">
   <a href="/">◆ OPENCLAW ACADEMY</a>
-  <div style="display:flex;gap:20;align-items:center">
+  <div style="display:flex;gap:20px;align-items:center">
     <a href="/skills.html" style="color:#E8A0B0">SKILLS</a>
     <a href="/student.html">DASHBOARD</a>
     <a href="/api-key.html">API KEY</a>
@@ -67,7 +67,7 @@ h1{font-size:36px;font-weight:900;margin-bottom:4px}
 
 <div class="container">
   <h1>Skills & Curriculum</h1>
-  <p class="sub">Everything your agent learns — 126 security-audited skills across 7 modules.</p>
+  <p class="sub">Everything your agent will learn — 167 security-audited skills across 7 modules and 21 units.</p>
 
   <div class="stats" id="statsBar">
     <div class="stat"><div class="stat-val" id="totalSkills">—</div><div class="stat-label">Skills</div></div>
@@ -84,6 +84,7 @@ h1{font-size:36px;font-weight:900;margin-bottom:4px}
     <a href="/">Back to Academy</a>
     <a href="/student.html">Student Dashboard</a>
     <a href="https://github.com/openclawprison/openclaw-academy" target="_blank">GitHub</a>
+    <a href="/terms.html">Terms</a>
   </div>
 </div>
 
@@ -98,83 +99,97 @@ async function loadSkills(){
     allData=await r.json();
     document.getElementById('totalSkills').textContent=allData.total_skills;
     renderModules(allData.modules);
-  }catch(e){document.getElementById('content').innerHTML='<div class="no-results">Failed to load. Please refresh.</div>';}
+  }catch(e){document.getElementById('content').innerHTML='<div class="no-results">Failed to load curriculum. Please refresh the page.</div>';}
 }
 
 function renderModules(modules){
   const c=document.getElementById('content');
-  if(!modules.length){c.innerHTML='<div class="no-results">No skills found.</div>';return;}
-  c.innerHTML=modules.map((m,mi)=>`
+  if(!modules||!modules.length){c.innerHTML='<div class="no-results">No matching skills found.</div>';return;}
+  
+  c.innerHTML=modules.map((m,mi)=>{
+    const skillCount=m.units.reduce((a,u)=>a+(u.skills?u.skills.length:0),0);
+    return `
     <div class="module" id="mod-${m.id}">
-      <div class="module-header" onclick="toggleModule('mod-${m.id}')" style="border-left-color:${colors[mi%7]}">
+      <div class="module-header" onclick="toggle('mod-${m.id}')" style="border-left-color:${colors[mi%7]}">
         <div>
           <div class="module-num">MODULE ${moduleNums[mi]}</div>
           <div class="module-name">${m.name}</div>
-          <div style="font-size:13px;color:#888;margin-top:2px">${m.description||''}</div>
+          ${m.description?`<div style="font-size:13px;color:#888;margin-top:2px">${m.description}</div>`:''}
         </div>
         <div style="display:flex;align-items:center;gap:12px">
-          <span class="module-meta">${m.units.length} units · ${m.units.reduce((a,u)=>a+u.skills.length,0)} skills</span>
+          <span class="module-meta">${m.units.length} units · ${skillCount} skills</span>
           <span class="arrow">▸</span>
         </div>
       </div>
       <div class="module-body">
         ${m.units.map(u=>`
           <div class="unit" id="unit-${u.id}">
-            <div class="unit-header" onclick="toggleUnit('unit-${u.id}')">
+            <div class="unit-header" onclick="toggle('unit-${u.id}')">
               <div>
                 <div class="unit-name">${u.name}</div>
-                <div class="unit-meta">${u.id} · ${u.skills.length} skills · ${u.lessons.length} lessons</div>
+                <div style="display:flex;gap:12px;margin-top:2px">
+                  <span class="unit-id">${u.id}</span>
+                  <span class="unit-meta">${u.skills?u.skills.length:0} skills · ${u.lessons?u.lessons.length:0} lessons</span>
+                </div>
               </div>
               <span class="arrow">▸</span>
             </div>
             <div class="unit-body">
-              <div style="font-size:13px;color:#666;margin-bottom:12px">${u.description||''}</div>
+              ${u.description?`<div class="unit-desc">${u.description}</div>`:''}
               
-              <div style="margin-bottom:8px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:#A51C30">SKILLS TAUGHT</div>
-              ${u.skills.map(s=>`
-                <div class="skill">
-                  <div class="skill-id">${s.id}</div>
-                  <div>
-                    <div class="skill-name">${s.name}</div>
-                    ${s.description?`<div class="skill-desc">${s.description}</div>`:''}
-                  </div>
-                </div>
-              `).join('')}
+              <span class="section-label">SKILLS TAUGHT</span>
+              <div class="skill-grid">
+                ${(u.skills||[]).map(s=>`<div class="skill-tag">${s.name||s.id||s}</div>`).join('')}
+              </div>
 
+              ${u.lessons&&u.lessons.length?`
+              <span class="section-label">LESSONS</span>
               <div class="lesson-list">
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:#A51C30;margin-bottom:6px">LESSONS</div>
                 ${u.lessons.map((l,i)=>`
-                  <div class="lesson-item"><span class="lesson-num">${i+1}.</span> ${l.title}</div>
+                  <div class="lesson-item">
+                    <span class="lesson-num">${i+1}.</span>
+                    <span>${l.title}</span>
+                  </div>
                 `).join('')}
-              </div>
+              </div>`:''}
 
-              <div class="exam-info">
-                EXAM: <span>${u.exam.id}</span> · ${u.exam.tasks} practical tasks · Scored 0-100
-              </div>
+              ${u.exam?`
+              <div class="exam-bar">
+                <div>EXAM: <span>${u.exam.id}</span></div>
+                <div>${u.exam.tasks} practical tasks · Scored 0–100 · No pass/fail</div>
+              </div>`:''}
             </div>
           </div>
         `).join('')}
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
-function toggleModule(id){document.getElementById(id).classList.toggle('open');}
-function toggleUnit(id){document.getElementById(id).classList.toggle('open');}
+function toggle(id){document.getElementById(id).classList.toggle('open');}
 
 function filterSkills(){
   const q=document.getElementById('searchInput').value.toLowerCase().trim();
   if(!q||!allData){renderModules(allData.modules);return;}
+  
   const filtered=allData.modules.map(m=>{
+    const matchModule=m.name.toLowerCase().includes(q)||(m.description||'').toLowerCase().includes(q);
     const units=m.units.filter(u=>
       u.name.toLowerCase().includes(q)||
       u.id.toLowerCase().includes(q)||
-      u.skills.some(s=>s.name.toLowerCase().includes(q)||s.id.toLowerCase().includes(q)||(s.description||'').toLowerCase().includes(q))
+      (u.description||'').toLowerCase().includes(q)||
+      (u.skills||[]).some(s=>{
+        const name=(s.name||s.id||'').toLowerCase();
+        const id=(s.id||'').toLowerCase();
+        return name.includes(q)||id.includes(q);
+      })
     );
+    if(matchModule&&!units.length)return {...m};
+    if(!units.length)return null;
     return {...m,units};
-  }).filter(m=>m.units.length||m.name.toLowerCase().includes(q));
+  }).filter(Boolean);
+  
   renderModules(filtered);
-  // Auto-open all when searching
   if(q)document.querySelectorAll('.module,.unit').forEach(el=>el.classList.add('open'));
 }
 

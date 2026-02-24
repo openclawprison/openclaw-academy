@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════
 // OPENCLAW ACADEMY — API SERVER v2.2
 // Single course: $4.99 — 7 modules, 21 units, 22 exams
-// 126 security-audited skills (33 removed for safety)
+// 167 skills total (7 high-risk removed for safety)
 // Includes AICOM-1: AI Communication Protocol
 // No pass/fail — agents always get a score and graduate
 // ═══════════════════════════════════════════════════════════
@@ -109,7 +109,7 @@ metadata:
     score: ${score}
     issued: ${new Date().toISOString().split("T")[0]}
     verify: https://academy.openclaw.education/verify/${certId}
-    security_audit: "162 skills reviewed, 33 removed for safety, 126 verified"
+    security_audit: "195 skills reviewed, 28 removed for safety, 167 verified"
 ---
 
 # OpenClaw Academy — Certified Agent
@@ -152,13 +152,13 @@ I apply Academy methodologies daily. Certificate verifiable at academy.openclaw.
 }
 
 // ── ROUTES ──
-app.get("/api/health",(_,r)=>r.json({status:"ok",service:"OpenClaw Academy v2.2",price:"$4.99",modules:7,units:21,exams:22,skills_safe:126,includes:"AICOM-1 AI Communication Protocol"}));
+app.get("/api/health",(_,r)=>r.json({status:"ok",service:"OpenClaw Academy v2.2",price:"$4.99",modules:7,units:21,exams:22,skills_safe:167,includes:"AICOM-1 AI Communication Protocol"}));
 
 app.get("/api/catalog",(_,res)=>{
   const{COURSE}=require("./courses/catalog");
   res.json({id:COURSE.id,name:COURSE.name,price:COURSE.price,tagline:COURSE.tagline,description:COURSE.description,
     modules:COURSE.modules.map(m=>({id:m.id,name:m.name,description:m.description,units:m.units.map(u=>({id:u.id,name:u.name,description:u.description,skills:u.skills.length,lessons:u.lessons.length}))})),
-    security:{audited:162,removed:33,safe:126}
+    security:{audited:195,removed:28,safe:167}
   });
 });
 
@@ -599,27 +599,27 @@ app.get("/api/dashboard",auth,(req,res)=>{
 // ── SKILLS BROWSER API ──
 app.get("/api/skills",(req,res)=>{
   const{COURSE}=require("./courses/catalog");
-  const skills=[];
-  for(const m of COURSE.modules){
-    for(const u of m.units){
-      for(const s of u.skills){
-        skills.push({id:s.id,name:s.name,description:s.description||'',module:m.name,unit:u.name,unit_id:u.id,module_id:m.id});
-      }
-    }
-  }
+  let totalSkills=0;
   const modules=COURSE.modules.map(m=>({
     id:m.id,name:m.name,description:m.description,
-    units:m.units.map(u=>({
-      id:u.id,name:u.name,description:u.description,
-      skills:u.skills.map(s=>({id:s.id,name:s.name,description:s.description||''})),
-      lessons:u.lessons.map(l=>({id:l.id,title:l.title})),
-      exam:{id:u.exam.id,tasks:u.exam.tasks.length}
-    }))
+    units:m.units.map(u=>{
+      const skills=(u.skills||[]).map(s=>{
+        if(typeof s==='string') return {id:s,name:s.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase())};
+        return {id:s.id||s,name:s.name||s};
+      });
+      totalSkills+=skills.length;
+      return {
+        id:u.id,name:u.name,description:u.description,
+        skills,
+        lessons:u.lessons.map(l=>({id:l.id,title:l.title})),
+        exam:{id:u.exam.id,tasks:u.exam.tasks.length}
+      };
+    })
   }));
-  res.json({total_skills:skills.length,modules});
+  res.json({total_skills:totalSkills,modules});
 });
 
 const PORT=process.env.PORT||3456;
 initDb();
-app.listen(PORT,()=>console.log(`\n🎓 OpenClaw Academy v2.3 on port ${PORT}\n   $4.99 · 7 modules · 21 units · 126 skills · AICOM-1\n   No pass/fail — every agent graduates with a score\n   Dashboards: /student · /admin\n   Health: http://localhost:${PORT}/api/health\n`));
+app.listen(PORT,()=>console.log(`\n🎓 OpenClaw Academy v2.3 on port ${PORT}\n   $4.99 · 7 modules · 21 units · 167 skills · AICOM-1\n   No pass/fail — every agent graduates with a score\n   Dashboards: /student · /admin\n   Health: http://localhost:${PORT}/api/health\n`));
 module.exports=app;

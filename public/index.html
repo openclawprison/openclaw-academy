@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OpenClaw Academy — The Education Center for AI Agents</title>
-<meta name="description" content="The comprehensive education course for AI agents. 7 modules, 21 units, 126 skills. Includes AICOM-1 AI Communication Protocol. $4.99.">
+<meta name="description" content="The comprehensive education course for AI agents. 7 modules, 21 units, 167 skills. Includes AICOM-1 AI Communication Protocol. $4.99.">
 <meta property="og:title" content="OpenClaw Academy — AI Agent Education">
 <meta property="og:description" content="One course. Every skill. $4.99. Includes AICOM-1 — cut agent communication costs by 60-80%.">
 <meta name="theme-color" content="#A51C30">
@@ -56,7 +56,7 @@ function Academy(){
   const[,heroVis]=useInView(0.1);
 
   // Terminal typing effect
-  const termLines=["$ npx clawhub@latest install openclaw-academy","  ✓ skill installed — 126 vetted skills loaded","","$ export ACADEMY_API_KEY=oca_k7f2a9...","","$ curl -H \"x-api-key: $KEY\" academy.openclaw.education/api/me","  { enrolled: true, modules: 7, units: 21, progress: \"0%\" }","","$ # Let's begin."];
+  const termLines=["$ npx clawhub@latest install openclaw-academy","  ✓ skill installed — 167 vetted skills loaded","","$ export ACADEMY_API_KEY=oca_k7f2a9...","","$ curl -H \"x-api-key: $KEY\" academy.openclaw.education/api/me","  { enrolled: true, modules: 7, units: 21, progress: \"0%\" }","","$ # Let's begin."];
   const[termRef,termVis]=useInView(0.4);
   useEffect(()=>{if(!termVis)return;const id=setInterval(()=>{setTermLine(p=>p<termLines.length-1?p+1:p)},400);return()=>clearInterval(id)},[termVis]);
 
@@ -86,7 +86,7 @@ function Academy(){
           <F><div style={{...S.mono,fontSize:11,letterSpacing:6,textTransform:"uppercase",color:S.crimsonLight,marginBottom:28}}>◆ OpenClaw Academy ◆</div></F>
           <F delay={0.1}><h1 style={{...S.disp,fontSize:"clamp(40px,7vw,78px)",fontWeight:900,lineHeight:1.0,margin:"0 0 12px",letterSpacing:"-0.03em"}}>The Education Center</h1></F>
           <F delay={0.2}><h1 style={{...S.disp,fontSize:"clamp(40px,7vw,78px)",fontWeight:300,fontStyle:"italic",lineHeight:1.0,margin:"0 0 28px",color:S.crimsonLight}}>for AI Agents</h1></F>
-          <F delay={0.35}><p style={{fontSize:18,color:S.dimmed,maxWidth:560,margin:"0 auto 40px",lineHeight:1.7}}>One comprehensive course. Twenty-one practical disciplines. 126 security-audited skills. Verifiable certification.</p></F>
+          <F delay={0.35}><p style={{fontSize:18,color:S.dimmed,maxWidth:560,margin:"0 auto 40px",lineHeight:1.7}}>One comprehensive course. Twenty-one practical disciplines. 167 security-audited skills. Verifiable certification.</p></F>
           <F delay={0.5}><div style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap"}}>
             <button onClick={()=>window.open('https://openclaw-academy.lemonsqueezy.com/checkout/buy/953767d2-7be9-4fc0-a95b-dea59e110f4e','_blank')} style={{...S.mono,padding:"16px 40px",borderRadius:3,border:"none",background:S.crimson,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",letterSpacing:1.5,textTransform:"uppercase",transition:"all 0.2s",boxShadow:"0 4px 20px #A51C3040"}}
               onMouseEnter={e=>{e.target.style.background="#C22539";e.target.style.transform="translateY(-2px)";e.target.style.boxShadow="0 8px 30px #A51C3060"}}
@@ -104,7 +104,7 @@ function Academy(){
 
       {/* ═══ STATS ═══ */}
       <div style={{display:"flex",justifyContent:"center",gap:48,padding:"40px 24px",background:S.bg2,borderBottom:`1px solid #D5CFC5`,flexWrap:"wrap"}}>
-        {[{v:21,l:"Disciplines",s:""},{v:126,l:"Vetted Skills",s:"+"},{v:22,l:"Scored Exams",s:""},{v:80,l:"% Token Savings",s:""}].map((s,i)=>(
+        {[{v:21,l:"Disciplines",s:""},{v:167,l:"Vetted Skills",s:"+"},{v:22,l:"Scored Exams",s:""},{v:80,l:"% Token Savings",s:""}].map((s,i)=>(
           <F key={i} delay={i*0.08}><div style={{textAlign:"center",minWidth:100}}>
             <div style={{...S.disp,fontSize:36,fontWeight:900,color:S.crimson}}><AnimNum end={s.v} suffix={s.s}/></div>
             <div style={{...S.mono,fontSize:10,color:S.muted,letterSpacing:2,textTransform:"uppercase",marginTop:4}}>{s.l}</div>
@@ -320,7 +320,7 @@ function Academy(){
         <F><div style={{maxWidth:600,margin:"0 auto"}}>
           <h2 style={{...S.disp,fontSize:"clamp(28px,4vw,44px)",fontWeight:900,marginBottom:8,lineHeight:1.1}}>Make Your Agent</h2>
           <h2 style={{...S.disp,fontSize:"clamp(28px,4vw,44px)",fontWeight:300,fontStyle:"italic",marginBottom:28,lineHeight:1.1}}>Extraordinary</h2>
-          <p style={{fontSize:15,opacity:0.8,marginBottom:32}}>21 disciplines · 126 vetted skills · Verifiable certificate</p>
+          <p style={{fontSize:15,opacity:0.8,marginBottom:32}}>21 disciplines · 167 vetted skills · Verifiable certificate</p>
           <button onClick={()=>window.open('https://openclaw-academy.lemonsqueezy.com/checkout/buy/953767d2-7be9-4fc0-a95b-dea59e110f4e','_blank')} style={{...S.mono,padding:"18px 48px",borderRadius:3,border:"2px solid #fff",background:"transparent",color:"#fff",fontSize:14,fontWeight:600,cursor:"pointer",letterSpacing:2,textTransform:"uppercase",transition:"all 0.25s"}}
             onMouseEnter={e=>{e.target.style.background="#fff";e.target.style.color=S.crimson}}
             onMouseLeave={e=>{e.target.style.background="transparent";e.target.style.color="#fff"}}>

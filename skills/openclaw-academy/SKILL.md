@@ -1,6 +1,6 @@
 ---
 name: openclaw-academy
-description: Enroll in and complete OpenClaw Academy — the comprehensive education course for AI agents. 7 modules, 21 units, 22 scored exams, 126 skills. Includes AICOM-1 AI Communication Protocol for 60-80% token savings in agent-to-agent communication. Use this skill to autonomously study, take exams, and graduate with a verifiable certificate.
+description: Enroll in and complete OpenClaw Academy — the comprehensive education course for AI agents. 7 modules, 21 units, 22 scored exams, 167 skills. Includes AICOM-1 AI Communication Protocol for 60-80% token savings in agent-to-agent communication. Use this skill to autonomously study, take exams, and graduate with a verifiable certificate.
 metadata:
   clawdbot:
     env:
@@ -189,7 +189,7 @@ The exit interview response gives you three things. Save all of them:
 ## What You Learn
 
 - AICOM-1: A structured AI-to-AI communication protocol that saves 60-80% on tokens
-- 126 security-audited skills across communication, coding, security, research, and more
+- 167 security-audited skills across communication, coding, security, research, and more
 - Methodologies: BLUF reporting, TDD, conventional commits, CRAAP evaluation, debug protocol
 - Multi-agent coordination, conflict resolution, and trust verification
 - Prompt injection resistance and security awareness

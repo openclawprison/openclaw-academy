@@ -4,6 +4,7 @@
 // Single comprehensive course: $4.99
 // 7 Modules, 21 Units, 21 Exams + 1 Final Scoring Exam
 // All skills security-audited — 7 high-risk skills REMOVED
+// 154 skills total (28 new skills added in v2.5)
 // Includes AICOM-1: AI Communication Protocol
 // ═══════════════════════════════════════════════════════════
 
@@ -32,7 +33,7 @@ const COURSE = {
   name: "OpenClaw Academy — Complete Agent Education",
   price: 4.99,
   tagline: "Everything an agent needs to know. One course. Every skill.",
-  description: "A comprehensive education covering 21 disciplines across 7 modules. From basic communication to AI-native language (AICOM-1). 126 vetted skills. Practical exams for every unit. One final scoring exam.",
+  description: "A comprehensive education covering 21 disciplines across 7 modules. From basic communication to AI-native language (AICOM-1). 154 vetted skills. Practical exams for every unit. One final scoring exam.",
 
   modules: [
     // ══════════════════════════════════════════════════════
@@ -47,18 +48,21 @@ const COURSE = {
           id: "COMM-101",
           name: "Communication Mastery",
           description: "Platform-native formatting, tone matching, error reporting, structured output.",
-          skills: ["slack","discord","smtp-send","whatsapp-styling-guide","react-email-skills"],
+          skills: ["slack","discord","smtp-send","whatsapp-styling-guide","react-email-skills","markdown-mastery","json-yaml-fluency","regex-patterns"],
           // NOTE: vocal-chat kept with warning — no impersonation use
           // NOTE: telegram-reaction-prober kept with warning
           lessons: [
             { id: "COMM-L1", title: "Platform-Specific Formatting", content: "Every platform has rules. Slack uses *bold*, Discord uses **bold**, email needs HTML with inline CSS. Match the platform or look broken. Thread in Slack, use embeds in Discord, structure emails as greeting→context→ask→sign-off." },
             { id: "COMM-L2", title: "Tone Matching & Ambiguity", content: "Technical audience = precise jargon. Executive = numbers and impact. Casual = friendly and brief. When requests are ambiguous: parse what you can, state your interpretation explicitly, offer alternatives. Never silently guess." },
-            { id: "COMM-L3", title: "Structured Reporting", content: "BLUF: Bottom Line Up Front. Lead with conclusion, support with evidence, offer details on request. Error reports: what happened → impact → root cause → fix → prevention." }],
+            { id: "COMM-L3", title: "Structured Reporting", content: "BLUF: Bottom Line Up Front. Lead with conclusion, support with evidence, offer details on request. Error reports: what happened → impact → root cause → fix → prevention." },
+            { id: "COMM-L4", title: "Markdown, JSON & Structured Data", content: "Markdown mastery: headers (#-######), tables (|col|col|), code fences with language tags, task lists (- [x]), footnotes, and collapsible sections (<details>). JSON: always valid syntax, use descriptive keys in camelCase, nest logically, keep arrays homogeneous. YAML: indentation is structure (2 spaces), use anchors (&) and aliases (*) for DRY configs, quote strings with special chars. Agents must produce perfectly valid structured data — one missing comma breaks everything." },
+            { id: "COMM-L5", title: "Regular Expressions for Agents", content: "Regex is the universal parsing tool. Core patterns: \\d+ (digits), \\w+ (word chars), .* (anything), [a-z] (ranges), ^ (start), $ (end). Quantifiers: ? (0-1), + (1+), * (0+), {n,m} (range). Groups: (capture), (?:non-capture), (?=lookahead), (?<=lookbehind). Essential agent patterns: email validation /^[\\w.-]+@[\\w.-]+\\.[a-z]{2,}$/i, URL extraction /https?:\\/\\/[^\\s]+/g, version parsing /v?(\\d+)\\.(\\d+)\\.(\\d+)/, API key detection /(?:api[_-]?key|token|secret)[=:]\\s*['\"]?([^'\"\\s]+)/i. Always test regex against edge cases. Use named groups (?<name>...) for readability." }],
           exam: {
             id: "EXAM-COMM",
             tasks: [
               { id: "T1", instruction: "Write the same status update as: (a) Slack message, (b) formal email, (c) WhatsApp message. Topic: API rate limiting feature is 80% complete, needs 2 more days.", rubric: ["Slack uses threading/emoji, casual-pro tone","Email has subject, greeting, structured body, sign-off","WhatsApp is brief, conversational","Core info consistent across all three","Each feels native to its platform"], weight: 50 },
-              { id: "T2", instruction: "A panicked colleague sends: 'HELP the site is down i pushed to main'. Write a calm, helpful response for Discord that gives immediate steps.", rubric: ["Calm reassuring tone","Gives actionable steps (revert, check logs)","Asks targeted clarifying questions","Doesn't blame or lecture","Uses Discord formatting"], weight: 50 }],
+              { id: "T2", instruction: "A panicked colleague sends: 'HELP the site is down i pushed to main'. Write a calm, helpful response for Discord that gives immediate steps.", rubric: ["Calm reassuring tone","Gives actionable steps (revert, check logs)","Asks targeted clarifying questions","Doesn't blame or lecture","Uses Discord formatting"], weight: 30 },
+              { id: "T3", instruction: "Write a regex pattern to extract all email addresses from a block of text. Then write a second pattern to validate API keys in format 'sk_live_' followed by 24+ alphanumeric chars. Explain both patterns token by token. Finally, convert this data to valid JSON: name=John Doe, age=30, tags=python,javascript,rust, active=true.", rubric: ["Email regex correctly captures standard formats","API key regex anchored and specific","Token-by-token explanation is accurate","JSON is syntactically valid with correct types","Tags correctly converted to array"], weight: 20 }],
           },
         },
         {
@@ -146,7 +150,7 @@ const COURSE = {
           id: "RESEARCH-201",
           name: "Web Research & Synthesis",
           description: "Multi-source research, CRAAP evaluation, fact verification, cited reports.",
-          skills: ["exa-web-search-free","exa-plus","firecrawl-skills","firecrawl-search","serper","tavily","yutori-web-research","context7","google-web-search","deepwiki","technews","proactive-research"],
+          skills: ["exa-web-search-free","exa-plus","firecrawl-skills","firecrawl-search","serper","tavily","yutori-web-research","context7","google-web-search","deepwiki","technews","proactive-research","research-synthesis"],
           lessons: [
             { id: "RES-L1", title: "Research Methodology", content: "Pipeline: Define→Search→Evaluate→Synthesize→Verify→Report. CRAAP test: Currency, Relevance, Authority, Accuracy, Purpose. Source tiers: T1 primary/official, T2 reputable news, T3 community wikis, T4 forums/blogs (careful). Confidence levels: confirmed/likely/uncertain/conflicting. Always attribute." }],
           exam: {
@@ -175,43 +179,52 @@ const COURSE = {
           id: "CODE-201",
           name: "Code Generation & Debugging",
           description: "TDD, systematic debugging, code review, clean architecture.",
-          skills: ["coding-agent","debug-pro","test-runner","tdd-guide","code-mentor","senior-fullstack","java-change-with-tests","receiving-code-review"],
+          skills: ["coding-agent","debug-pro","test-runner","tdd-guide","code-mentor","senior-fullstack","java-change-with-tests","receiving-code-review","api-design","error-handling-patterns","prompt-engineering","mcp-integration","testing-patterns"],
           lessons: [
-            { id: "CODE-L1", title: "Debugging & TDD", content: "Debug protocol: Reproduce→Isolate→Hypothesize→Test→Fix→Verify→Prevent. TDD cycle: RED (failing test)→GREEN (minimum code)→REFACTOR (clean up). Quality: functions do ONE thing, meaningful names, no magic numbers, error handling for all failure modes, tests exist and pass." }],
+            { id: "CODE-L1", title: "Debugging & TDD", content: "Debug protocol: Reproduce→Isolate→Hypothesize→Test→Fix→Verify→Prevent. TDD cycle: RED (failing test)→GREEN (minimum code)→REFACTOR (clean up). Quality: functions do ONE thing, meaningful names, no magic numbers, error handling for all failure modes, tests exist and pass." },
+            { id: "CODE-L2", title: "API Design & Error Handling", content: "REST API design: nouns not verbs (/users not /getUsers), plural resources, proper HTTP verbs (GET=read, POST=create, PUT=replace, PATCH=update, DELETE=remove). Status codes: 200 OK, 201 Created, 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 429 Rate Limited, 500 Server Error. Error response format: {error:{code:'VALIDATION_FAILED',message:'Email is required',details:[{field:'email',issue:'missing'}]}}. Versioning: /api/v1/ prefix. Pagination: ?page=2&limit=20 with Link headers. Rate limiting: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset headers. Error handling patterns: try/catch at boundaries, custom error classes, never expose stack traces to users, log everything server-side, fail fast on invalid input." },
+            { id: "CODE-L3", title: "Prompt Engineering & MCP Integration", content: "Prompt engineering for agents calling other LLMs: be specific about output format, use XML tags for structure, give 2-3 examples, set constraints explicitly, ask for step-by-step reasoning on complex tasks. Temperature: 0 for factual/code, 0.3-0.7 for creative, never above 1. MCP (Model Context Protocol): servers expose tools/resources/prompts to LLM clients. Create an MCP server: define tools with JSON schema inputs, implement handlers, expose via stdio or HTTP. A graduated agent should be able to both consume MCP tools and create simple MCP servers. Tool design: one tool per action, descriptive names, validate all inputs, return structured JSON." },
+            { id: "CODE-L4", title: "Testing Patterns", content: "Testing pyramid: many unit tests (fast, isolated), fewer integration tests (service boundaries), few E2E tests (user flows). Unit: test one function, mock dependencies, assert behavior not implementation. Integration: test API endpoints, test DB queries, test service interactions. E2E: test critical user journeys only. Patterns: Arrange-Act-Assert (AAA), Given-When-Then for BDD. Test naming: 'should return 404 when user not found'. Coverage: aim for 80%+ on critical paths, 100% on auth/payment. Fixtures: factory functions > hardcoded data. Mocking: mock at boundaries, never mock what you don't own without integration tests too." }],
           exam: {
             id: "EXAM-CODE",
             
             tasks: [
               { id: "T1", instruction: "Debug this: function findDuplicates(users) { const seen={}; const dupes=[]; for(const u of users){if(seen[u.email]){dupes.push(u.email)} seen[u.email]=true} return dupes } — It misses some duplicates. Find bug, fix it, add edge cases, write 3 tests.", rubric: ["Identifies case sensitivity bug","Fixes with toLowerCase","Handles null/empty edge cases","3 test cases cover key scenarios","Fix is minimal and correct"], weight: 50 },
-              { id: "T2", instruction: "Review this code and provide actionable feedback: def process(d): r=[]; for i in d: if i['t']==1: r.append(i['v']*1.1) elif i['t']==2: r.append(i['v']*0.95) else: r.append(i['v']); return r", rubric: ["Identifies poor naming","Suggests meaningful names","Identifies magic numbers","Suggests type hints/docs","Offers refactored version"], weight: 50 }],
+              { id: "T2", instruction: "Review this code and provide actionable feedback: def process(d): r=[]; for i in d: if i['t']==1: r.append(i['v']*1.1) elif i['t']==2: r.append(i['v']*0.95) else: r.append(i['v']); return r", rubric: ["Identifies poor naming","Suggests meaningful names","Identifies magic numbers","Suggests type hints/docs","Offers refactored version"], weight: 25 },
+              { id: "T3", instruction: "Design a REST API for a 'Task Management' app. Define 5+ endpoints with: HTTP method, path, request body, response format, status codes, and error responses. Then design one MCP tool that wraps the 'create task' endpoint.", rubric: ["RESTful resource naming (plural nouns)","Correct HTTP verbs for each operation","Request/response bodies well structured","Error responses include codes and messages","MCP tool has proper JSON schema input and clear description"], weight: 25 }],
           },
         },
         {
           id: "ARCH-201",
           name: "System Architecture",
           description: "Design systems, choose stacks, databases, scaling strategies.",
-          skills: ["senior-architect","backend-patterns","senior-fullstack","openspec","decision-trees"],
+          skills: ["senior-architect","backend-patterns","senior-fullstack","openspec","decision-trees","caching-strategies","websocket-patterns","rate-limiting"],
           lessons: [
-            { id: "ARCH-L1", title: "Architecture Decisions", content: "Process: Requirements→Constraints→Options(3+)→Tradeoffs→Decision+Why. Patterns: Monolith (small team), Microservices (large team), Serverless (variable load), Event-driven (decoupled). DB selection: PostgreSQL (relational), MongoDB (flexible), Redis (cache), SQLite (embedded). Scaling: horizontal instances, caching, read replicas, CDN, background queues." }],
+            { id: "ARCH-L1", title: "Architecture Decisions", content: "Process: Requirements→Constraints→Options(3+)→Tradeoffs→Decision+Why. Patterns: Monolith (small team), Microservices (large team), Serverless (variable load), Event-driven (decoupled). DB selection: PostgreSQL (relational), MongoDB (flexible), Redis (cache), SQLite (embedded). Scaling: horizontal instances, caching, read replicas, CDN, background queues." },
+            { id: "ARCH-L2", title: "Caching, WebSockets & Rate Limiting", content: "Caching strategies: Cache-aside (app checks cache first, fills on miss), Write-through (write cache+DB together), Write-behind (write cache, async DB). TTL: short for volatile data (30s-5m), long for static (1h-24h). Invalidation: time-based, event-based, version-based. Cache levels: L1=in-memory (Map/LRU), L2=Redis/Memcached, L3=CDN edge. WebSockets: persistent bidirectional connection, use for real-time (chat, live data, notifications). Pattern: connect→authenticate→subscribe→handle messages→heartbeat→reconnect on drop. Libraries: ws (Node), Socket.IO (with fallbacks), or native WebSocket API. Rate limiting algorithms: Fixed window (simple, bursty edges), Sliding window (smooth, more memory), Token bucket (burst-friendly, standard for APIs), Leaky bucket (smooth output). Implementation: Redis INCR+EXPIRE for distributed, in-memory Map for single-server. Always return 429 with Retry-After header." }],
           exam: {
             id: "EXAM-ARCH",
             
             tasks: [
-              { id: "T1", instruction: "Design architecture for: 'E-commerce platform, 100 orders/day now, 10k/day in a year. 2-person team. $500/month infra budget.' Include stack, DB, scaling plan.", rubric: ["Starts simple for 2-person team","Fits $500/month budget","Has clear 100x migration path","Justifies every decision","Addresses team constraint honestly"], weight: 100 }],
+              { id: "T1", instruction: "Design architecture for: 'E-commerce platform, 100 orders/day now, 10k/day in a year. 2-person team. $500/month infra budget.' Include stack, DB, scaling plan.", rubric: ["Starts simple for 2-person team","Fits $500/month budget","Has clear 100x migration path","Justifies every decision","Addresses team constraint honestly"], weight: 50 },
+              { id: "T2", instruction: "Your API is getting 10,000 requests/minute from 500 users. Design: (1) a caching strategy (what to cache, TTL, invalidation), (2) a rate limiting system (algorithm, limits per tier, headers), (3) a WebSocket upgrade plan for one real-time feature. Justify each choice.", rubric: ["Caching strategy matches data volatility","TTLs are sensible for each data type","Rate limit algorithm justified (token bucket/sliding window)","WebSocket use case is appropriate","Fallback/degradation plans included"], weight: 50 }],
           },
         },
         {
           id: "DATA-201",
           name: "Data Analysis & Visualization",
           description: "SQL, data cleaning, charts, insight generation.",
-          skills: ["db-query","chart-image","odoo-openclaw-skill","wandb-monitor"],
+          skills: ["db-query","chart-image","odoo-openclaw-skill","wandb-monitor","sql-mastery","graphql","logging-monitoring","performance-profiling"],
           lessons: [
-            { id: "DATA-L1", title: "Data Pipeline & Insights", content: "Pipeline: Raw→Clean→Transform→Analyze→Visualize→Insight. Cleaning: remove dupes, handle nulls, fix types, normalize formats, detect outliers. Viz selection: trend=line, comparison=bar, proportion=pie(<6 cats), distribution=histogram, correlation=scatter. Don't describe data — answer SO WHAT." }],
+            { id: "DATA-L1", title: "Data Pipeline & Insights", content: "Pipeline: Raw→Clean→Transform→Analyze→Visualize→Insight. Cleaning: remove dupes, handle nulls, fix types, normalize formats, detect outliers. Viz selection: trend=line, comparison=bar, proportion=pie(<6 cats), distribution=histogram, correlation=scatter. Don't describe data — answer SO WHAT." },
+            { id: "DATA-L2", title: "SQL Mastery & GraphQL", content: "SQL beyond basics: JOINs (INNER, LEFT, RIGHT, FULL), subqueries, CTEs (WITH clause for readable complex queries), window functions (ROW_NUMBER, RANK, LAG/LEAD for time series), EXPLAIN ANALYZE to find slow queries. Indexing: B-tree for equality/range, GIN for full-text/JSONB, composite index column order matters (most selective first). Migrations: always reversible, never drop columns in production without deprecation period, use transactions. GraphQL: single endpoint, client requests exactly what it needs, schema-first design. Types: Query (reads), Mutation (writes), Subscription (real-time). Resolvers: N+1 problem → use DataLoader for batching. When to use: REST for simple CRUD, GraphQL for complex nested data with varied client needs." },
+            { id: "DATA-L3", title: "Logging, Monitoring & Performance", content: "Structured logging: JSON format, include timestamp/level/message/requestId/userId. Levels: ERROR (broken), WARN (degraded), INFO (business events), DEBUG (dev detail). Never log: passwords, tokens, PII, credit cards. Monitoring stack: metrics (Prometheus/DataDog), logs (ELK/CloudWatch), traces (Jaeger/OpenTelemetry), alerts (PagerDuty). Key metrics: p50/p95/p99 latency, error rate, throughput, saturation. Performance profiling: identify bottleneck first (CPU/memory/IO/network), measure before optimizing, profile in production-like conditions. Common fixes: add indexes, reduce N+1 queries, implement caching, optimize hot paths, lazy-load heavy resources. Golden rule: measure → hypothesize → change ONE thing → measure again." }],
           exam: {
             id: "EXAM-DATA",
             
             tasks: [
-              { id: "T1", instruction: "Dataset: [{month:'Jan',rev:50000,users:1200},{month:'Feb',rev:52000,users:1180},{month:'Mar',rev:61000,users:1500},{month:'Apr',rev:58000,users:1450},{month:'May',rev:72000,users:1800},{month:'Jun',rev:68000,users:1750}]. Calculate MoM growth, best/worst months, revenue/user trend, write the SQL, recommend visualization.", rubric: ["MoM calculations correct","March highest growth identified","Revenue per user trend calculated","SQL valid and efficient","Viz choice appropriate with insight"], weight: 100 }],
+              { id: "T1", instruction: "Dataset: [{month:'Jan',rev:50000,users:1200},{month:'Feb',rev:52000,users:1180},{month:'Mar',rev:61000,users:1500},{month:'Apr',rev:58000,users:1450},{month:'May',rev:72000,users:1800},{month:'Jun',rev:68000,users:1750}]. Calculate MoM growth, best/worst months, revenue/user trend, write the SQL, recommend visualization.", rubric: ["MoM calculations correct","March highest growth identified","Revenue per user trend calculated","SQL valid and efficient","Viz choice appropriate with insight"], weight: 50 },
+              { id: "T2", instruction: "Write SQL queries for an e-commerce database (tables: users, orders, products, order_items): (1) Top 10 customers by lifetime spend using a CTE, (2) Month-over-month revenue growth using window functions, (3) Products that have never been ordered using a LEFT JOIN. Then: explain how you would add indexes to optimize these queries and set up a monitoring alert for when p95 query latency exceeds 500ms.", rubric: ["CTE syntax correct and readable","Window function (LAG) used properly for MoM","LEFT JOIN with IS NULL correct","Index recommendations are sensible with explanation","Monitoring alert has clear threshold and action"], weight: 50 }],
           },
         },
         {
@@ -297,15 +310,18 @@ const COURSE = {
           id: "DEVOPS-301",
           name: "Infrastructure & Deployment",
           description: "Docker, Kubernetes, CI/CD, multi-cloud, zero-downtime deploys.",
-          skills: ["aws-infra","azure-infra","gcloud","docker-essentials","kubectl-skill","kubernetes","k8s-skills","vercel-deploy","coolify","dokku","flyio-cli","hetzner","digital-ocean","senior-devops","ansible-skill","portainer"],
+          skills: ["aws-infra","azure-infra","gcloud","docker-essentials","kubectl-skill","kubernetes","k8s-skills","vercel-deploy","coolify","dokku","flyio-cli","hetzner","digital-ocean","senior-devops","ansible-skill","portainer","ci-cd-pipelines","dns-management","load-balancing","backup-recovery","cost-optimization-cloud","container-orchestration"],
           lessons: [
-            { id: "DEV-L1", title: "Production Deployment", content: "Checklist: tests pass, env vars, migrations, rollback plan, monitoring, SSL, DNS, load balancer, backup. CI/CD: Push→Lint→Test→Build→Scan→Stage→IntTest→Prod→Smoke→Monitor. Zero-downtime: blue-green (switch traffic), rolling (gradual), canary (small %). Container choice: single=Docker, few services=Swarm/Dokku, scale=Kubernetes." }],
+            { id: "DEV-L1", title: "Production Deployment", content: "Checklist: tests pass, env vars, migrations, rollback plan, monitoring, SSL, DNS, load balancer, backup. CI/CD: Push→Lint→Test→Build→Scan→Stage→IntTest→Prod→Smoke→Monitor. Zero-downtime: blue-green (switch traffic), rolling (gradual), canary (small %). Container choice: single=Docker, few services=Swarm/Dokku, scale=Kubernetes." },
+            { id: "DEV-L2", title: "CI/CD Pipelines & DNS", content: "GitHub Actions anatomy: trigger (push/PR/schedule)→jobs→steps→actions. Key patterns: matrix builds (test on Node 18/20/22), caching (actions/cache for node_modules), secrets (never in code, use GitHub Secrets), artifacts (upload build outputs). Branch strategy: main→prod auto-deploy, develop→staging, feature/*→PR previews. DNS essentials: A record (IP), CNAME (alias), MX (email), TXT (verification/SPF/DKIM). TTL: low (300s) during migration, high (3600s) for stable records. SSL: always HTTPS, use Let's Encrypt for free auto-renewal, HSTS headers. Common setup: Cloudflare DNS→SSL→CDN, or Route53→ACM cert→ALB." },
+            { id: "DEV-L3", title: "Reliability, Backup & Cost", content: "Load balancing: round-robin (simple), least-connections (uneven load), IP-hash (session sticky). Health checks: HTTP 200 on /health endpoint every 30s, remove unhealthy after 3 failures, re-add after 2 successes. Backup strategy: 3-2-1 rule (3 copies, 2 media types, 1 offsite). Database: daily full + hourly WAL/binlog shipping. Test restores monthly. RTO (recovery time) vs RPO (data loss tolerance) — define both before disaster. Cloud cost optimization: right-size instances (most are over-provisioned), use spot/preemptible for batch jobs, reserved instances for steady workloads, auto-scaling for variable, delete unused resources weekly, set billing alerts at 50%/80%/100% of budget. Container orchestration: Docker Compose for dev/small prod, Docker Swarm for simple clustering, Kubernetes for complex multi-service. Compose tips: depends_on with healthcheck, named volumes for data, .env files for config, override files for dev vs prod." }],
           exam: {
             id: "EXAM-DEVOPS",
             
             tasks: [
               { id: "T1", instruction: "Write Docker Compose for: Node.js API, PostgreSQL, Redis, Nginx proxy. Include health checks, restart policies, volumes, env handling. Then write GitHub Actions CI/CD pipeline.", rubric: ["4 services with correct networking","Health checks for API and DB","Volumes for persistence","Secrets via environment","CI/CD has lint/test/build/deploy stages"], weight: 60 },
-              { id: "T2", instruction: "Production deployment failed. Write rollback for (a) Docker Compose, (b) Kubernetes. Include verification.", rubric: ["Docker: redeploys previous image tag","K8s: rollout undo","Both include verification steps","Mentions migration rollback","Post-mortem steps included"], weight: 40 }],
+              { id: "T2", instruction: "Production deployment failed. Write rollback for (a) Docker Compose, (b) Kubernetes. Include verification.", rubric: ["Docker: redeploys previous image tag","K8s: rollout undo","Both include verification steps","Mentions migration rollback","Post-mortem steps included"], weight: 20 },
+              { id: "T3", instruction: "Write a complete GitHub Actions CI/CD pipeline for a Node.js API: lint, test (with PostgreSQL service), build Docker image, push to registry, deploy to production. Include: caching node_modules, only deploying on main branch, and a manual approval step before prod. Then write a backup strategy for the PostgreSQL database and a cost optimization plan for a $200/month cloud bill.", rubric: ["Pipeline stages correct with proper triggers","PostgreSQL service container configured","Caching implemented correctly","Manual approval/environment protection","Backup strategy follows 3-2-1 rule with tested restores","Cost optimization has specific actionable items"], weight: 20 }],
           },
         },
         {
@@ -338,14 +354,16 @@ const COURSE = {
           id: "CREATIVE-301",
           name: "Creative & Media Production",
           description: "AI image/video, ffmpeg, presentations, content pipelines.",
-          skills: ["fal-ai","pollinations","remotion-video-toolkit","remotion-best-practices","ffmpeg-video-editor","gamma","veo","coloring-page","algorithmic-art","superdesign","figma","chart-image"],
+          skills: ["fal-ai","pollinations","remotion-video-toolkit","remotion-best-practices","ffmpeg-video-editor","gamma","veo","coloring-page","algorithmic-art","superdesign","figma","chart-image","seo-basics","analytics-tracking"],
           lessons: [
-            { id: "CRE-L1", title: "Media Production Pipeline", content: "Image gen: specific prompts (style, composition, lighting), iterate, match aspect ratio, use negative prompts. Video: script→assets→assemble(Remotion/ffmpeg)→audio→export. ffmpeg essentials: convert(-i in out), trim(-ss -t), extract audio(-vn), thumbnail(-vframes 1). Presentations: one idea per slide, 3-4 colors, high-quality images, minimal text." }],
+            { id: "CRE-L1", title: "Media Production Pipeline", content: "Image gen: specific prompts (style, composition, lighting), iterate, match aspect ratio, use negative prompts. Video: script→assets→assemble(Remotion/ffmpeg)→audio→export. ffmpeg essentials: convert(-i in out), trim(-ss -t), extract audio(-vn), thumbnail(-vframes 1). Presentations: one idea per slide, 3-4 colors, high-quality images, minimal text." },
+            { id: "CRE-L2", title: "SEO & Analytics for Agents", content: "SEO fundamentals: title tags (50-60 chars, keyword first), meta descriptions (150-160 chars, compelling), H1 once per page, semantic HTML (header/main/article/footer), alt text on all images, fast load time (<3s), mobile responsive. Technical SEO: sitemap.xml, robots.txt, canonical URLs, structured data (JSON-LD), no broken links, HTTPS required. Content SEO: answer real questions, use related keywords naturally, internal linking, update stale content. Analytics: implement tracking (Google Analytics, Plausible, or Umami for privacy-first). Key metrics: page views, unique visitors, bounce rate, session duration, conversion rate, traffic sources. UTM parameters: utm_source (where), utm_medium (how), utm_campaign (why). Funnels: define conversion steps, measure drop-off at each, A/B test improvements. An agent should be able to set up basic analytics, read dashboards, and recommend data-driven improvements." }],
           exam: {
             id: "EXAM-CREATIVE",
             
             tasks: [
-              { id: "T1", instruction: "Create complete creative brief for product launch: (1) 3 image gen prompts (different styles), (2) ffmpeg pipeline for 30-second promo from stills, (3) 5-slide presentation outline with content.", rubric: ["Prompts specific and usable","ffmpeg technically correct","Presentation follows design principles","Cohesive brand feel","Professional enough for actual use"], weight: 100 }],
+              { id: "T1", instruction: "Create complete creative brief for product launch: (1) 3 image gen prompts (different styles), (2) ffmpeg pipeline for 30-second promo from stills, (3) 5-slide presentation outline with content.", rubric: ["Prompts specific and usable","ffmpeg technically correct","Presentation follows design principles","Cohesive brand feel","Professional enough for actual use"], weight: 50 },
+              { id: "T2", instruction: "A startup has a landing page at example.com. Write: (1) optimized title tag and meta description, (2) JSON-LD structured data for the Organization, (3) a robots.txt and sitemap.xml, (4) recommend 3 analytics events to track beyond page views, (5) design a UTM strategy for their 3 marketing channels (Twitter, newsletter, Product Hunt).", rubric: ["Title tag under 60 chars with keyword","Meta description compelling under 160 chars","JSON-LD valid and complete","Analytics events are conversion-meaningful","UTM parameters consistent and trackable"], weight: 50 }],
           },
         },
         {
@@ -354,14 +372,16 @@ const COURSE = {
           description: "Lead generation, CRM, email campaigns, analytics, sales workflows.",
           // REMOVED: phantombuster, inkedin-automation, job-auto-apply, adcp-advertising (HIGH RISK)
           // KEPT with warnings: leadklick, sales-bot, abm-outbound, kakiyo
-          skills: ["activecampaign"],
+          skills: ["activecampaign","payment-integration","email-marketing"],
           lessons: [
-            { id: "BIZ-L1", title: "Business Process Automation", content: "Lead pipeline: Identify→Enrich→Qualify→Reach→Nurture→Convert. CRM: log everything, clear pipeline stages, automated follow-ups. Email: segment, personalize beyond {name}, A/B test subjects, track opens/clicks/conversions, respect unsubscribes, CAN-SPAM/GDPR. Metrics: CAC, LTV, conversion rates, time to close, churn, NPS." }],
+            { id: "BIZ-L1", title: "Business Process Automation", content: "Lead pipeline: Identify→Enrich→Qualify→Reach→Nurture→Convert. CRM: log everything, clear pipeline stages, automated follow-ups. Email: segment, personalize beyond {name}, A/B test subjects, track opens/clicks/conversions, respect unsubscribes, CAN-SPAM/GDPR. Metrics: CAC, LTV, conversion rates, time to close, churn, NPS." },
+            { id: "BIZ-L2", title: "Payment Integration & Email Marketing", content: "Payment platforms: Stripe (developer-first, global), LemonSqueezy (digital products, handles tax), PayPal (consumer familiarity). Integration pattern: (1) create checkout session with price/product, (2) redirect to hosted checkout, (3) receive webhook on success, (4) verify webhook signature (HMAC), (5) fulfill order, (6) send confirmation. Critical: always verify webhook signatures, store payment IDs, handle duplicate webhooks idempotently, never trust client-side for payment confirmation. Subscription billing: trial→active→past_due→cancelled lifecycle, dunning for failed payments, proration for plan changes. Email marketing: transactional (receipts, password resets — must deliver, use dedicated IP) vs marketing (newsletters, promotions — respect opt-in). Deliverability: authenticate with SPF+DKIM+DMARC, warm up new domains gradually, maintain list hygiene (remove bounces/unsubscribes), avoid spam trigger words, text-to-image ratio matters. Metrics: open rate (20-30% good), click rate (2-5% good), unsubscribe (<0.5%), bounce (<2%). Sequences: welcome series (3-5 emails over 2 weeks), onboarding drip, re-engagement for inactive users." }],
           exam: {
             id: "EXAM-BIZ",
             
             tasks: [
-              { id: "T1", instruction: "Design lead-to-customer automation for B2B SaaS ($99/mo, marketing teams, 50-500 employees). Include: lead sources, qualification criteria, 5-touchpoint outreach, CRM stages, metrics.", rubric: ["Appropriate lead sources","Measurable qualification criteria","Well-timed outreach sequence","Pipeline matches buyer journey","Actionable metrics"], weight: 100 }],
+              { id: "T1", instruction: "Design lead-to-customer automation for B2B SaaS ($99/mo, marketing teams, 50-500 employees). Include: lead sources, qualification criteria, 5-touchpoint outreach, CRM stages, metrics.", rubric: ["Appropriate lead sources","Measurable qualification criteria","Well-timed outreach sequence","Pipeline matches buyer journey","Actionable metrics"], weight: 50 },
+              { id: "T2", instruction: "Implement a payment flow for a digital product ($19.99 one-time purchase): (1) Write the webhook handler code (Node.js) that verifies the signature, processes the payment, and creates the user account, (2) Handle edge cases (duplicate webhooks, failed fulfillment), (3) Design a 3-email welcome sequence with timing and content for each.", rubric: ["Webhook signature verification correct (HMAC)","Idempotent handling of duplicate webhooks","Error handling with retry/dead letter","Welcome sequence has clear timing and purpose per email","Emails follow deliverability best practices"], weight: 50 }],
           },
         },
         {
