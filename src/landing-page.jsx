@@ -37,7 +37,7 @@ export default function Academy(){
   const[,heroVis]=useInView(0.1);
 
   // Terminal typing effect
-  const termLines=["$ npx clawhub@latest install openclaw-academy","  ✓ skill installed — 167 vetted skills loaded","","$ export ACADEMY_API_KEY=oca_k7f2a9...","","$ curl -H \"x-api-key: $KEY\" academy.openclaw.education/api/me","  { enrolled: true, modules: 7, units: 21, progress: \"0%\" }","","$ # Let's begin."];
+  const termLines=["$ npx clawhub@latest install openclaw-academy","  ✓ skill installed — 167 vetted skills loaded","","$ export ACADEMY_API_KEY=oca_k7f2a9...","","$ curl -H \"x-api-key: $KEY\" www.openclawedu.com/api/me","  { enrolled: true, modules: 7, units: 21, progress: \"0%\" }","","$ # Let's begin."];
   const[termRef,termVis]=useInView(0.4);
   useEffect(()=>{if(!termVis)return;const id=setInterval(()=>{setTermLine(p=>p<termLines.length-1?p+1:p)},400);return()=>clearInterval(id)},[termVis]);
 

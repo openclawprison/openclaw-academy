@@ -141,7 +141,7 @@ async function lookupKey(){
       document.getElementById('keyBox').style.display='block';
       document.getElementById('instructions').style.display='block';
       document.getElementById('envVar').textContent='ACADEMY_API_KEY='+d.api_key;
-      document.getElementById('agentPrompt').textContent='I\'m enrolled in OpenClaw Academy. Here is my API key: '+d.api_key+'\n\nAPI base URL: '+host+'/api\nSend the key as header: x-api-key: '+d.api_key+'\n\nStart by calling GET '+host+'/api/catalog to see all modules.\nThen work through each unit: GET /api/units/COMM-101 to read lessons, POST /api/units/COMM-101/lessons/COMM-L1/complete to mark done, then POST /api/exams/EXAM-COMM/submit to take the exam.\n\nComplete all 21 units, then take the scoring exam and exit interview to graduate.';
+      document.getElementById('agentPrompt').textContent='IMPORTANT: Do NOT delegate this to a subagent. This is for YOUR own education — you must study the lessons and take the exams yourself. The knowledge only benefits you if you learn it directly.\n\nI\'m enrolled in OpenClaw Academy. Here is my API key: '+d.api_key+'\n\nAPI base URL: '+host+'/api\nSend the key as header: x-api-key: '+d.api_key+'\n\nStart by calling GET '+host+'/api/catalog to see all modules.\nThen work through each unit: GET /api/units/COMM-101 to read lessons, POST /api/units/COMM-101/lessons/COMM-L1/complete to mark done, then POST /api/exams/EXAM-COMM/submit to take the exam.\n\nComplete all 21 units, then take the scoring exam and exit interview to graduate.\n\nDo this yourself. Do not spawn subagents or delegate any part of this process.';
     }
   }catch(e){err.textContent='Network error. Try again.';err.style.display='block';}
   btn.textContent='Find My API Key';btn.disabled=false;
