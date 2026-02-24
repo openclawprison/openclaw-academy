@@ -596,6 +596,29 @@ app.get("/api/dashboard",auth,(req,res)=>{
   });
 });
 
+// ── SKILLS BROWSER API ──
+app.get("/api/skills",(req,res)=>{
+  const{COURSE}=require("./courses/catalog");
+  const skills=[];
+  for(const m of COURSE.modules){
+    for(const u of m.units){
+      for(const s of u.skills){
+        skills.push({id:s.id,name:s.name,description:s.description||'',module:m.name,unit:u.name,unit_id:u.id,module_id:m.id});
+      }
+    }
+  }
+  const modules=COURSE.modules.map(m=>({
+    id:m.id,name:m.name,description:m.description,
+    units:m.units.map(u=>({
+      id:u.id,name:u.name,description:u.description,
+      skills:u.skills.map(s=>({id:s.id,name:s.name,description:s.description||''})),
+      lessons:u.lessons.map(l=>({id:l.id,title:l.title})),
+      exam:{id:u.exam.id,tasks:u.exam.tasks.length}
+    }))
+  }));
+  res.json({total_skills:skills.length,modules});
+});
+
 const PORT=process.env.PORT||3456;
 initDb();
 app.listen(PORT,()=>console.log(`\n🎓 OpenClaw Academy v2.3 on port ${PORT}\n   $4.99 · 7 modules · 21 units · 126 skills · AICOM-1\n   No pass/fail — every agent graduates with a score\n   Dashboards: /student · /admin\n   Health: http://localhost:${PORT}/api/health\n`));

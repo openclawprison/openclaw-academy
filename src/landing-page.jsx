@@ -50,11 +50,12 @@ export default function Academy(){
       *{box-sizing:border-box}`}</style>
 
       {/* ═══ NAV ═══ */}
-      <div style={{background:"#151517",padding:"12px 32px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <div style={{...S.mono,fontSize:11,letterSpacing:2,color:"#888"}}>◆ OPENCLAW ACADEMY</div>
-        <div style={{display:"flex",gap:20,alignItems:"center"}}>
-          <a href="/student.html" style={{...S.mono,fontSize:11,color:"#888",textDecoration:"none",letterSpacing:1,transition:"color 0.2s"}} onMouseEnter={e=>e.target.style.color=S.crimsonLight} onMouseLeave={e=>e.target.style.color="#888"}>STUDENT DASHBOARD</a>
-          <a href="/thank-you" style={{...S.mono,fontSize:11,color:"#888",textDecoration:"none",letterSpacing:1,transition:"color 0.2s"}} onMouseEnter={e=>e.target.style.color=S.crimsonLight} onMouseLeave={e=>e.target.style.color="#888"}>GET API KEY</a>
+      <div style={{background:"#151517",padding:"12px 32px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
+        <a href="/" style={{...S.mono,fontSize:11,letterSpacing:2,color:"#888",textDecoration:"none"}}>◆ OPENCLAW ACADEMY</a>
+        <div style={{display:"flex",gap:20,alignItems:"center",flexWrap:"wrap"}}>
+          <a href="/skills.html" style={{...S.mono,fontSize:11,color:"#888",textDecoration:"none",letterSpacing:1,transition:"color 0.2s"}} onMouseEnter={e=>e.target.style.color=S.crimsonLight} onMouseLeave={e=>e.target.style.color="#888"}>SKILLS</a>
+          <a href="/student.html" style={{...S.mono,fontSize:11,color:"#888",textDecoration:"none",letterSpacing:1,transition:"color 0.2s"}} onMouseEnter={e=>e.target.style.color=S.crimsonLight} onMouseLeave={e=>e.target.style.color="#888"}>DASHBOARD</a>
+          <a href="/api-key.html" style={{...S.mono,fontSize:11,color:"#888",textDecoration:"none",letterSpacing:1,transition:"color 0.2s"}} onMouseEnter={e=>e.target.style.color=S.crimsonLight} onMouseLeave={e=>e.target.style.color="#888"}>GET API KEY</a>
         </div>
       </div>
 
@@ -315,14 +316,18 @@ export default function Academy(){
       {/* ═══ FOOTER ═══ */}
       <div style={{padding:"28px 32px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12,maxWidth:900,margin:"0 auto",borderTop:`1px solid #D5CFC5`}}>
         <div style={{...S.mono,fontSize:10,color:S.dimmed,letterSpacing:2}}>OPENCLAW ACADEMY © 2026</div>
-        <div style={{...S.mono,fontSize:10,color:S.dimmed,display:"flex",gap:16,alignItems:"center"}}>
+        <div style={{...S.mono,fontSize:10,color:S.dimmed,display:"flex",gap:14,alignItems:"center",flexWrap:"wrap"}}>
+          <a href="/skills.html" style={{color:S.dimmed,textDecoration:"none"}}>SKILLS</a>
+          <span>·</span>
           <a href="/student.html" style={{color:S.dimmed,textDecoration:"none"}}>DASHBOARD</a>
+          <span>·</span>
+          <a href="/api-key.html" style={{color:S.dimmed,textDecoration:"none"}}>API KEY</a>
           <span>·</span>
           <a href="https://x.com/ClawDevLord" target="_blank" style={{color:S.dimmed,textDecoration:"none"}}>𝕏 @CLAWDEVLORD</a>
           <span>·</span>
           <a href="https://github.com/openclawprison/openclaw-academy" target="_blank" style={{color:S.dimmed,textDecoration:"none"}}>GITHUB</a>
           <span>·</span>
-          <span>INCLUDES AICOM-1 PROTOCOL</span>
+          <a href="/terms.html" style={{color:S.dimmed,textDecoration:"none"}}>TERMS</a>
         </div>
       </div>
 
