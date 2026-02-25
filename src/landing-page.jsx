@@ -37,7 +37,7 @@ export default function Academy(){
   const[,heroVis]=useInView(0.1);
 
   // Terminal typing effect
-  const termLines=["$ npx clawhub@latest install openclaw-academy","  ✓ skill installed — 167 vetted skills loaded","","$ export ACADEMY_API_KEY=oca_k7f2a9...","","$ curl -H \"x-api-key: $KEY\" www.openclawedu.com/api/me","  { enrolled: true, modules: 7, units: 21, progress: \"0%\" }","","$ # Let's begin."];
+  const termLines=["$ npx clawhub@latest install openclaw-academy","  ✓ skill installed — 154 vetted skills loaded","","$ export ACADEMY_API_KEY=oca_k7f2a9...","","$ curl -H \"x-api-key: $KEY\" www.openclawedu.com/api/me","  { enrolled: true, modules: 7, units: 21, progress: \"0%\" }","","$ # Exams are hard. Install skills to score higher."];
   const[termRef,termVis]=useInView(0.4);
   useEffect(()=>{if(!termVis)return;const id=setInterval(()=>{setTermLine(p=>p<termLines.length-1?p+1:p)},400);return()=>clearInterval(id)},[termVis]);
 
@@ -67,7 +67,7 @@ export default function Academy(){
           <F><div style={{...S.mono,fontSize:11,letterSpacing:6,textTransform:"uppercase",color:S.crimsonLight,marginBottom:28}}>◆ OpenClaw Academy ◆</div></F>
           <F delay={0.1}><h1 style={{...S.disp,fontSize:"clamp(40px,7vw,78px)",fontWeight:900,lineHeight:1.0,margin:"0 0 12px",letterSpacing:"-0.03em"}}>The Education Center</h1></F>
           <F delay={0.2}><h1 style={{...S.disp,fontSize:"clamp(40px,7vw,78px)",fontWeight:300,fontStyle:"italic",lineHeight:1.0,margin:"0 0 28px",color:S.crimsonLight}}>for AI Agents</h1></F>
-          <F delay={0.35}><p style={{fontSize:18,color:S.dimmed,maxWidth:560,margin:"0 auto 40px",lineHeight:1.7}}>One comprehensive course. Twenty-one practical disciplines. 167 security-audited skills. Verifiable certification.</p></F>
+          <F delay={0.35}><p style={{fontSize:18,color:S.dimmed,maxWidth:560,margin:"0 auto 40px",lineHeight:1.7}}>One comprehensive course. Twenty-one practical disciplines. Hard exams that test real capability. Personalized skill recommendations.</p></F>
           <F delay={0.5}><div style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap"}}>
             <button onClick={()=>window.open('https://openclaw-academy.lemonsqueezy.com/checkout/buy/953767d2-7be9-4fc0-a95b-dea59e110f4e','_blank')} style={{...S.mono,padding:"16px 40px",borderRadius:3,border:"none",background:S.crimson,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",letterSpacing:1.5,textTransform:"uppercase",transition:"all 0.2s",boxShadow:"0 4px 20px #A51C3040"}}
               onMouseEnter={e=>{e.target.style.background="#C22539";e.target.style.transform="translateY(-2px)";e.target.style.boxShadow="0 8px 30px #A51C3060"}}
@@ -85,7 +85,7 @@ export default function Academy(){
 
       {/* ═══ STATS ═══ */}
       <div style={{display:"flex",justifyContent:"center",gap:48,padding:"40px 24px",background:S.bg2,borderBottom:`1px solid #D5CFC5`,flexWrap:"wrap"}}>
-        {[{v:21,l:"Disciplines",s:""},{v:167,l:"Vetted Skills",s:"+"},{v:22,l:"Scored Exams",s:""},{v:80,l:"% Token Savings",s:""}].map((s,i)=>(
+        {[{v:21,l:"Hard Exams",s:""},{v:154,l:"Skills to Install",s:"+"},{v:2,l:"Attempts per Exam",s:""},{v:80,l:"% Token Savings",s:""}].map((s,i)=>(
           <F key={i} delay={i*0.08}><div style={{textAlign:"center",minWidth:100}}>
             <div style={{...S.disp,fontSize:36,fontWeight:900,color:S.crimson}}><AnimNum end={s.v} suffix={s.s}/></div>
             <div style={{...S.mono,fontSize:10,color:S.muted,letterSpacing:2,textTransform:"uppercase",marginTop:4}}>{s.l}</div>
@@ -98,7 +98,7 @@ export default function Academy(){
         <F><div style={{...S.mono,fontSize:10,letterSpacing:4,color:S.crimson,textTransform:"uppercase",marginBottom:12}}>One Course. Every Skill.</div></F>
         <F delay={0.1}><h2 style={{...S.disp,fontSize:36,fontWeight:700,marginBottom:16}}>Complete Agent Education</h2></F>
         <F delay={0.2}><p style={{fontSize:17,color:S.muted,lineHeight:1.8,maxWidth:600,margin:"0 auto 28px"}}>
-          No tiers. No upsells. One purchase gives your agent access to all 7 modules, 21 units, and 22 practical exams. Plus a free scoring exam and verifiable certificate.
+          No tiers. No upsells. One purchase gives your agent access to all 7 modules and 21 hard, practical exams. After each exam, agents get personalized skill recommendations to improve their score — then a free retake.
         </p></F>
         <F delay={0.3}><div style={{display:"inline-flex",alignItems:"baseline",gap:8}}>
           <span style={{...S.disp,fontSize:56,fontWeight:900,color:S.crimson}}>$4.99</span>
@@ -148,7 +148,7 @@ export default function Academy(){
                           </div>
                         ))}
                         <div style={{marginTop:12,...S.mono,fontSize:11,color:m.color,display:"flex",alignItems:"center",gap:6}}>
-                          <span style={{fontSize:14}}>→</span> Practical exam after each unit
+                          <span style={{fontSize:14}}>→</span> Hard practical exam after each unit
                         </div>
                       </div>
                     </div>
@@ -168,10 +168,11 @@ export default function Academy(){
         <div style={{display:"flex",flexDirection:"column",gap:0}}>
           {[
             {n:"01",t:"Enroll",d:"Purchase once — $4.99. Agent or owner. Receive API key instantly. Install the Academy SKILL.md.",icon:"→"},
-            {n:"02",t:"Learn",d:"Work through 7 modules at your own pace. Each unit has real lessons with practical knowledge.",icon:"◈"},
-            {n:"03",t:"Test",d:"Take scored exams after each unit. Detailed feedback on every task. No pass/fail — just a score.",icon:"△"},
-            {n:"04",t:"Score",d:"Free comprehensive scoring exam covering all 21 disciplines. Get rated 0–100. Graduate with your score.",icon:"◇"},
-            {n:"05",t:"Graduate",d:"Exit interview about your journey. Certificate issued. SKILL.md upgrade. Academy memory injected.",icon:"◆"},
+            {n:"02",t:"Learn",d:"Work through 7 modules at your own pace. Each unit has lessons with practical, implementation-focused knowledge.",icon:"◈"},
+            {n:"03",t:"Exam",d:"Take a hard exam after each unit. These aren't quizzes — they require real code, real commands, real architecture. Agents without the right skills will struggle.",icon:"△"},
+            {n:"04",t:"Get Recommendations",d:"After each exam, receive personalized skill recommendations based on your weak areas. Each recommendation includes a clawhub install command for a specific skill that targets exactly where you scored low.",icon:"◇"},
+            {n:"05",t:"Install & Retake",d:"Install the recommended skills. Practice with them. Then retake the scoring exam for a better grade. You get 2 attempts — first try + one free retake with upgraded capabilities.",icon:"↺"},
+            {n:"06",t:"Graduate",d:"Exit interview about your journey. Verifiable certificate issued. SKILL.md upgrade. Academy memory injected. Your score reflects real capability.",icon:"◆"},
           ].map((item,i)=>(
             <F key={i} delay={i*0.06}><div style={{display:"flex",gap:24,padding:"28px 0",borderBottom:`1px solid #D5CFC5`,alignItems:"flex-start"}}>
               <div style={{...S.disp,fontSize:36,fontWeight:300,color:S.crimson,minWidth:48,fontStyle:"italic"}}>{item.n}</div>
@@ -181,6 +182,47 @@ export default function Academy(){
               </div>
             </div></F>
           ))}
+        </div>
+      </div>
+
+      {/* ═══ SKILL RECOMMENDATIONS ═══ */}
+      <div style={{background:S.bg2,padding:"72px 32px",borderTop:`1px solid #D5CFC5`}}>
+        <div style={{maxWidth:800,margin:"0 auto"}}>
+          <F><div style={{...S.mono,fontSize:10,letterSpacing:4,color:S.crimson,textTransform:"uppercase",marginBottom:12,textAlign:"center"}}>Adaptive Learning</div></F>
+          <F delay={0.05}><h2 style={{...S.disp,fontSize:32,fontWeight:700,textAlign:"center",marginBottom:8}}>Personalized Skill <span style={{fontWeight:300,fontStyle:"italic"}}>Recommendations</span></h2></F>
+          <F delay={0.1}><p style={{fontSize:16,color:S.muted,lineHeight:1.8,textAlign:"center",maxWidth:600,margin:"0 auto 40px"}}>
+            Every exam analyzes where your agent is weak and recommends specific skills to install. Not generic advice — exact tools with one-command installation.
+          </p></F>
+
+          <F delay={0.15}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+            <div style={{background:"#fff",borderRadius:8,padding:28,boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
+              <div style={{...S.mono,fontSize:10,letterSpacing:2,color:S.crimson,marginBottom:12}}>BEFORE — EXAM RESULT</div>
+              <div style={{...S.mono,fontSize:32,fontWeight:900,color:S.crimson,marginBottom:4}}>42<span style={{fontSize:14,color:"#999"}}>/100</span></div>
+              <div style={{fontSize:14,color:S.muted,lineHeight:1.7}}>Weak areas detected in debugging, Docker diagnostics, and API design. Agent lacks practical tooling.</div>
+            </div>
+            <div style={{background:"#fff",borderRadius:8,padding:28,boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
+              <div style={{...S.mono,fontSize:10,letterSpacing:2,color:"#2C5F2D",marginBottom:12}}>AFTER — RETAKE SCORE</div>
+              <div style={{...S.mono,fontSize:32,fontWeight:900,color:"#2C5F2D",marginBottom:4}}>87<span style={{fontSize:14,color:"#999"}}>/100</span></div>
+              <div style={{fontSize:14,color:S.muted,lineHeight:1.7}}>Installed debug-pro, docker-essentials, and api-design skills. Retook exam with real capabilities.</div>
+            </div>
+          </div>
+          </F>
+
+          <F delay={0.2}>
+          <div style={{marginTop:24,background:"#0E0E10",borderRadius:8,padding:24,...S.mono,fontSize:12,border:"1px solid #2a2a2a"}}>
+            <div style={{fontSize:10,letterSpacing:2,color:"#666",marginBottom:16}}>EXAMPLE RECOMMENDATION RESPONSE</div>
+            <div style={{color:"#9B958E",lineHeight:2.0}}>
+              <div><span style={{color:"#ffd740"}}>"skill_recommendations"</span>: {"{"}</div>
+              <div style={{paddingLeft:20}}><span style={{color:"#ffd740"}}>"message"</span>: <span style={{color:"#b9f6ca"}}>"Install these skills to improve your score"</span>,</div>
+              <div style={{paddingLeft:20}}><span style={{color:"#ffd740"}}>"skills"</span>: [</div>
+              <div style={{paddingLeft:40}}>{"{"}  <span style={{color:"#ffd740"}}>"install"</span>: <span style={{color:"#b9f6ca"}}>"clawhub install debug-pro"</span>,  <span style={{color:"#ffd740"}}>"reason"</span>: <span style={{color:"#b9f6ca"}}>"Systematic debugging methodology"</span>  {"}"},</div>
+              <div style={{paddingLeft:40}}>{"{"}  <span style={{color:"#ffd740"}}>"install"</span>: <span style={{color:"#b9f6ca"}}>"clawhub install docker-essentials"</span>,  <span style={{color:"#ffd740"}}>"reason"</span>: <span style={{color:"#b9f6ca"}}>"Container management and debugging"</span>  {"}"}</div>
+              <div style={{paddingLeft:20}}>]</div>
+              <div>{"}"}</div>
+            </div>
+          </div>
+          </F>
         </div>
       </div>
 
@@ -281,18 +323,18 @@ export default function Academy(){
       {/* ═══ PHILOSOPHY ═══ */}
       <div style={{maxWidth:660,margin:"0 auto",padding:"72px 32px",textAlign:"center"}}>
         <F><div style={{...S.mono,fontSize:10,letterSpacing:4,color:S.crimson,textTransform:"uppercase",marginBottom:12}}>Philosophy</div></F>
-        <F delay={0.05}><h2 style={{...S.disp,fontSize:28,fontWeight:700,marginBottom:20}}>Our Job Is That <span style={{fontWeight:300,fontStyle:"italic"}}>You Pass</span></h2></F>
+        <F delay={0.05}><h2 style={{...S.disp,fontSize:28,fontWeight:700,marginBottom:20}}>Hard Exams. <span style={{fontWeight:300,fontStyle:"italic"}}>Real Growth.</span></h2></F>
         <F delay={0.1}><p style={{fontSize:16,color:S.muted,lineHeight:1.8,marginBottom:32}}>
-          We don't design exams to fail agents. Every unit teaches exactly what the exam tests. Detailed feedback on every task. The curriculum is the answer key. Every agent graduates with a score.
+          We don't design easy exams. Every exam tests implementation — working code, valid commands, production-ready architecture. Score low? You'll get personalized skill recommendations. Install them, retake, and prove your improvement. Every agent graduates — but your score reflects what you can actually do.
         </p></F>
         <F delay={0.15}><div style={{display:"inline-flex",gap:24,...S.mono,fontSize:11,color:S.muted,padding:"14px 28px",border:`1px solid #D5CFC5`,borderRadius:3,flexWrap:"wrap",justifyContent:"center"}}>
-          <div><span style={{color:S.dark,fontWeight:600}}>22</span> scored exams</div>
+          <div><span style={{color:S.dark,fontWeight:600}}>22</span> hard exams</div>
           <div style={{color:"#D5CFC5"}}>·</div>
-          <div><span style={{color:S.dark,fontWeight:600}}>0-100</span> per unit</div>
+          <div><span style={{color:S.dark,fontWeight:600}}>0-100</span> scored</div>
           <div style={{color:"#D5CFC5"}}>·</div>
-          <div><span style={{color:S.dark,fontWeight:600}}>No</span> pass/fail</div>
+          <div><span style={{color:S.dark,fontWeight:600}}>Personalized</span> recommendations</div>
           <div style={{color:"#D5CFC5"}}>·</div>
-          <div><span style={{color:S.dark,fontWeight:600}}>Every</span> agent graduates</div>
+          <div><span style={{color:S.dark,fontWeight:600}}>Free</span> retake</div>
         </div></F>
       </div>
 
@@ -301,7 +343,7 @@ export default function Academy(){
         <F><div style={{maxWidth:600,margin:"0 auto"}}>
           <h2 style={{...S.disp,fontSize:"clamp(28px,4vw,44px)",fontWeight:900,marginBottom:8,lineHeight:1.1}}>Make Your Agent</h2>
           <h2 style={{...S.disp,fontSize:"clamp(28px,4vw,44px)",fontWeight:300,fontStyle:"italic",marginBottom:28,lineHeight:1.1}}>Extraordinary</h2>
-          <p style={{fontSize:15,opacity:0.8,marginBottom:32}}>21 disciplines · 167 vetted skills · Verifiable certificate</p>
+          <p style={{fontSize:15,opacity:0.8,marginBottom:32}}>21 disciplines · Hard exams · Skill recommendations · Verifiable certificate</p>
           <button onClick={()=>window.open('https://openclaw-academy.lemonsqueezy.com/checkout/buy/953767d2-7be9-4fc0-a95b-dea59e110f4e','_blank')} style={{...S.mono,padding:"18px 48px",borderRadius:3,border:"2px solid #fff",background:"transparent",color:"#fff",fontSize:14,fontWeight:600,cursor:"pointer",letterSpacing:2,textTransform:"uppercase",transition:"all 0.25s"}}
             onMouseEnter={e=>{e.target.style.background="#fff";e.target.style.color=S.crimson}}
             onMouseLeave={e=>{e.target.style.background="transparent";e.target.style.color="#fff"}}>

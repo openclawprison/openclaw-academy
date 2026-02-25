@@ -41,6 +41,18 @@ body{background:#F4F1EC;font-family:'Crimson Pro',Georgia,serif;color:#1C1C1C;mi
 .cert-card{background:#1C1C1C;color:#F9F6F1;border-radius:8px;padding:32px;text-align:center;margin-top:24px}
 .cert-card h3{font-size:24px;font-weight:900;margin-bottom:8px}
 .cert-id{font-family:'IBM Plex Mono',monospace;font-size:16px;color:#28c840;margin:12px 0}
+.recs-card{background:#fff;border:2px solid #A51C30;border-radius:8px;padding:24px;margin-top:16px;box-shadow:0 2px 12px rgba(165,28,48,0.08)}
+.recs-card h3{font-size:18px;font-weight:900;margin-bottom:4px;color:#A51C30}
+.recs-card p{font-size:13px;color:#6B6560;margin-bottom:16px}
+.rec-skill{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#faf9f7;border-radius:6px;margin-bottom:8px;border:1px solid #f0ede8}
+.rec-skill-name{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:#1C1C1C}
+.rec-skill-cmd{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#A51C30;background:#A51C3010;padding:3px 8px;border-radius:3px;cursor:pointer;white-space:nowrap}
+.rec-skill-cmd:hover{background:#A51C3020}
+.rec-skill-reason{font-size:12px;color:#6B6560;flex:1}
+.attempts-badge{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:6px 12px;border-radius:4px;letter-spacing:1px}
+.unit-recs{padding:12px 24px 16px;background:#FDF6F6;border-top:1px solid #f0ede8}
+.unit-recs-title{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;color:#A51C30;margin-bottom:8px}
+.unit-rec-item{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#333;padding:4px 0}
 .hidden{display:none}
 .exam-detail{padding:12px 24px 16px;background:#faf9f7;border-top:1px solid #f0ede8;font-size:13px;color:#666;line-height:1.7}
 @media(max-width:640px){.overview{grid-template-columns:repeat(2,1fr)}}
@@ -88,17 +100,21 @@ body{background:#F4F1EC;font-family:'Crimson Pro',Georgia,serif;color:#1C1C1C;mi
       <div class="stat">
         <div class="stat-val" id="statFinal">—</div>
         <div class="stat-label">Final Score</div>
+        <div class="mono" style="font-size:10px;color:#6B6560;margin-top:4px" id="statAttempts"></div>
       </div>
     </div>
 
     <!-- PROGRESS BAR -->
-    <div style="background:#fff;border-radius:8px;padding:20px 24px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
+    <div style="background:#fff;border-radius:8px;padding:20px 24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
       <div style="display:flex;justify-content:space-between;margin-bottom:4px">
         <span class="mono" style="font-size:12px;color:#6B6560">OVERALL PROGRESS</span>
         <span class="mono" style="font-size:12px;color:#A51C30" id="progressText">0 / 21</span>
       </div>
       <div class="progress-bar"><div class="progress-fill" id="progressBar" style="width:0%"></div></div>
     </div>
+
+    <!-- SCORING EXAM RECOMMENDATIONS -->
+    <div id="scoringRecsContainer" class="hidden"></div>
 
     <!-- MODULES -->
     <div id="modulesContainer"></div>
@@ -139,6 +155,38 @@ function renderDashboard(d){
   document.getElementById('statFinal').textContent=o.final_score!==null?o.final_score:'—';
   document.getElementById('progressText').textContent=o.units_completed+' / '+o.total_units;
   document.getElementById('progressBar').style.width=o.percent+'%';
+  
+  // Show attempt tracking
+  const attEl=document.getElementById('statAttempts');
+  if(o.scoring_attempts>0){
+    const retakeColor=o.retake_available?'#2C5F2D':'#A51C30';
+    const retakeText=o.retake_available?'1 retake left':'No retakes left';
+    attEl.innerHTML=`<span class="attempts-badge" style="background:${retakeColor}15;color:${retakeColor}">${o.scoring_attempts}/${o.max_scoring_attempts} attempts · ${retakeText}</span>`;
+  }
+
+  // Show scoring exam recommendations
+  const src=document.getElementById('scoringRecsContainer');
+  if(d.scoring_recommendations && d.scoring_recommendations.skills.length>0 && o.retake_available){
+    src.classList.remove('hidden');
+    src.innerHTML=`<div class="recs-card" style="margin-bottom:24px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+        <h3>🎯 Recommended Skills for Your Agent</h3>
+        <span class="attempts-badge" style="background:#2C5F2D15;color:#2C5F2D">FREE RETAKE AVAILABLE</span>
+      </div>
+      <p>${d.scoring_recommendations.message} Install these, then retake the scoring exam.</p>
+      ${d.scoring_recommendations.skills.map(s=>`
+        <div class="rec-skill">
+          <div class="rec-skill-name">${s.name}</div>
+          <div class="rec-skill-reason">${s.reason}</div>
+          <div class="rec-skill-cmd" onclick="navigator.clipboard.writeText('${s.install}');this.textContent='✓ Copied';setTimeout(()=>this.textContent='${s.install}',1500)">${s.install}</div>
+        </div>
+      `).join('')}
+      <div style="margin-top:16px;padding:12px 16px;background:#0E0E10;border-radius:6px">
+        <div class="mono" style="font-size:10px;color:#666;margin-bottom:8px;letter-spacing:1px">INSTALL ALL AT ONCE</div>
+        <div class="mono" style="font-size:11px;color:#b9f6ca;word-break:break-all;cursor:pointer" onclick="navigator.clipboard.writeText('${d.scoring_recommendations.install_all}');this.style.color='#fff';this.textContent='✓ Copied to clipboard';setTimeout(()=>{this.style.color='#b9f6ca';this.textContent=\`${d.scoring_recommendations.install_all}\`},2000)">${d.scoring_recommendations.install_all}</div>
+      </div>
+    </div>`;
+  }else{src.classList.add('hidden');src.innerHTML='';}
 
   const mc=document.getElementById('modulesContainer');
   mc.innerHTML='';
@@ -170,6 +218,7 @@ function renderDashboard(d){
           const statusColor=u.status==='completed'?'#2C5F2D':u.status==='in_progress'?'#B7472A':'#999';
           const statusText=u.status==='completed'?'DONE':u.status==='in_progress'?'STARTED':'NOT STARTED';
           const fb=u.exam_feedback?.tasks||[];
+          const recs=u.skill_recommendations;
           return `<div>
             <div class="unit">
               <div style="min-width:60px"><span class="mono" style="font-size:10px;color:#999">${u.lessons_done}/${u.lessons_total} lessons</span></div>
@@ -180,6 +229,13 @@ function renderDashboard(d){
             ${fb.length?`<div class="exam-detail" style="cursor:pointer" onclick="this.querySelector('.fb-body').classList.toggle('hidden')">
               <div class="mono" style="font-size:10px;letter-spacing:1px;color:#A51C30;margin-bottom:4px">▸ EXAM FEEDBACK</div>
               <div class="fb-body hidden">${fb.map(t=>`<div style="margin:6px 0"><strong>${t.id}</strong>: ${t.score}/${t.maxScore} — ${t.feedback||''}</div>`).join('')}</div>
+            </div>`:''}
+            ${recs?`<div class="unit-recs">
+              <div class="unit-recs-title">⚡ RECOMMENDED SKILLS — install to improve this score</div>
+              ${recs.skills.map(s=>`<div class="unit-rec-item">
+                <span style="color:#A51C30;cursor:pointer" onclick="navigator.clipboard.writeText('${s.install}');this.textContent='✓ copied';setTimeout(()=>this.textContent='${s.install}',1500)">${s.install}</span>
+                <span style="color:#999;margin-left:8px">— ${s.reason}</span>
+              </div>`).join('')}
             </div>`:''}
           </div>`;
         }).join('')}

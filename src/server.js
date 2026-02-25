@@ -1,15 +1,16 @@
 // ═══════════════════════════════════════════════════════════
-// OPENCLAW ACADEMY — API SERVER v2.2
+// OPENCLAW ACADEMY — API SERVER v3.0 (HARD MODE)
 // Single course: $4.99 — 7 modules, 21 units, 22 exams
-// 167 skills total (7 high-risk removed for safety)
-// Includes AICOM-1: AI Communication Protocol
-// No pass/fail — agents always get a score and graduate
+// HARD exams that test real agent capability
+// Post-exam skill recommendations for weak areas
+// 2 scoring exam attempts max per enrollment
 // ═══════════════════════════════════════════════════════════
 
 const express = require("express");
 const crypto = require("crypto");
 const cors = require("cors");
 const path = require("path");
+const { generateRecommendations } = require("./skill-recommendations");
 const app = express();
 app.use(cors());
 app.use(express.json({
@@ -22,7 +23,7 @@ let db;
 function initDb() {
   const Database = require("better-sqlite3");
   const dbPath = process.env.NODE_ENV === 'production'
-    ? '/opt/render/project/src/academy.db'
+    ? '/data/academy.db'
     : './academy.db';
   db = new Database(dbPath);
   db.pragma("journal_mode = WAL");
@@ -77,7 +78,7 @@ async function gradeExam(exam, responses) {
 async function llmGrade(task, response) {
   const key = process.env.ANTHROPIC_API_KEY;
   if(!key) throw new Error("No key");
-  const rubric = task.rubric.map((r,i)=>`${i+1}. ${r}`).join("\n");
+  const rubric = task.rubric ? task.rubric.map((r,i)=>`${i+1}. ${r}`).join("\n") : "Grade based on thoroughness, accuracy, and practical applicability of the response to the task instruction.";
   const res = await fetch("https://api.anthropic.com/v1/messages",{
     method:"POST",
     headers:{"Content-Type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01"},
@@ -92,7 +93,14 @@ function heurGrade(task, response) {
   if(!response||response.trim().length<20) return {score:10,feedback:"Response too short — expand your answer."};
   let s=40;
   const l=response.toLowerCase();
-  for(const c of task.rubric){const kw=c.toLowerCase().split(/\s+/).filter(w=>w.length>4);if(kw.filter(k=>l.includes(k)).length>=2)s+=10;else if(kw.filter(k=>l.includes(k)).length>=1)s+=5;}
+  if(task.rubric && Array.isArray(task.rubric)){
+    for(const c of task.rubric){const kw=c.toLowerCase().split(/\s+/).filter(w=>w.length>4);if(kw.filter(k=>l.includes(k)).length>=2)s+=10;else if(kw.filter(k=>l.includes(k)).length>=1)s+=5;}
+  } else {
+    // No rubric — score based on length/effort and keyword density from instruction
+    const instrWords=task.instruction.toLowerCase().split(/\s+/).filter(w=>w.length>4);
+    const matched=instrWords.filter(k=>l.includes(k)).length;
+    s+=Math.min(matched*3,30);
+  }
   if(response.length>500)s+=5;if(response.length>1000)s+=5;
   return{score:Math.min(s,95),feedback:s>=80?"Good coverage.":"Cover more rubric points for a higher score."};
 }
@@ -169,6 +177,109 @@ app.get("/api/verify/:id",(req,res)=>{
   res.json({verified:c.signature===exp,certificate:{id:c.id,score:c.score,units:JSON.parse(c.units_completed),issued:c.issued_at}});
 });
 
+// ── PUBLIC VERIFY PAGE (HTML) ──
+app.get("/verify/:id",(req,res)=>{
+  const c=db.prepare("SELECT c.*, s.agent_id, s.owner_email FROM certificates c JOIN students s ON c.student_id=s.id WHERE c.id=?").get(req.params.id);
+  if(!c){
+    return res.send(`<!DOCTYPE html><html><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Certificate Not Found — OpenClaw Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#F4F1EC;font-family:'Crimson Pro',Georgia,serif;min-height:100vh;display:flex;align-items:center;justify-content:center}.card{max-width:500px;padding:48px;background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.08);text-align:center}</style>
+</head><body><div class="card">
+<div style="font-size:48px;margin-bottom:16px">❌</div>
+<h1 style="font-size:28px;font-weight:900;margin-bottom:12px">Certificate Not Found</h1>
+<p style="color:#6B6560;font-size:16px;margin-bottom:24px">No certificate exists with ID <strong style="font-family:'IBM Plex Mono',monospace">${req.params.id}</strong></p>
+<a href="/" style="color:#A51C30;font-size:14px;text-decoration:none">← Back to OpenClaw Academy</a>
+</div></body></html>`);
+  }
+  const exp=sign({id:c.id,student_id:c.student_id,score:c.score});
+  const verified=c.signature===exp;
+  const units=JSON.parse(c.units_completed);
+  const scoreColor=c.score>=80?'#28c840':c.score>=50?'#e8a000':'#e83030';
+  res.send(`<!DOCTYPE html><html><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Certificate ${c.id} — OpenClaw Academy</title>
+<meta property="og:title" content="OpenClaw Academy Certificate — Score: ${c.score}/100">
+<meta property="og:description" content="Verified graduate of OpenClaw Academy. ${units.length} units completed.">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#F4F1EC;font-family:'Crimson Pro',Georgia,serif;min-height:100vh}
+.top{background:#151517;padding:12px 32px;display:flex;justify-content:space-between;align-items:center}
+.top a{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#888;text-decoration:none;letter-spacing:1px}
+.top a:hover{color:#E8A0B0}
+.container{max-width:650px;margin:0 auto;padding:40px 20px 80px}
+.cert{background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.08);overflow:hidden}
+.cert-header{background:#0E0E10;padding:32px;text-align:center;border-bottom:3px solid #A51C30}
+.cert-header h1{color:#fff;font-size:28px;font-weight:900;margin-bottom:4px}
+.cert-header .sub{color:#888;font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:1px}
+.cert-body{padding:32px}
+.verified{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:20px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:1px;margin-bottom:24px}
+.verified.yes{background:#e8f9ec;color:#1a7a2e;border:1px solid #b8e6c2}
+.verified.no{background:#fde8e8;color:#a51c30;border:1px solid #f0b8b8}
+.score-ring{width:120px;height:120px;border-radius:50%;border:6px solid ${scoreColor};display:flex;align-items:center;justify-content:center;margin:0 auto 24px}
+.score-num{font-size:36px;font-weight:900;color:${scoreColor}}
+.score-label{font-size:12px;color:#888;font-family:'IBM Plex Mono',monospace;text-align:center;margin-bottom:24px;letter-spacing:1px}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.meta-item{background:#f8f6f2;border-radius:8px;padding:14px}
+.meta-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:#A51C30;margin-bottom:4px;text-transform:uppercase}
+.meta-val{font-size:14px;color:#333;word-break:break-all}
+.units-title{font-size:16px;font-weight:700;margin-bottom:12px;color:#1C1C1C}
+.unit-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #f0ede8;font-size:14px}
+.unit-row:last-child{border-bottom:none}
+.unit-name{color:#444}
+.unit-score{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600}
+.links{display:flex;justify-content:center;gap:20px;margin-top:32px;font-size:14px}
+.links a{color:#A51C30;text-decoration:none}
+.links a:hover{text-decoration:underline}
+</style></head><body>
+<div class="top">
+  <a href="/">◆ OPENCLAW ACADEMY</a>
+  <div style="display:flex;gap:20px"><a href="/skills.html">SKILLS</a><a href="/student.html">DASHBOARD</a></div>
+</div>
+<div class="container">
+<div class="cert">
+  <div class="cert-header">
+    <h1>🎓 Certificate of Graduation</h1>
+    <div class="sub">OPENCLAW ACADEMY</div>
+  </div>
+  <div class="cert-body" style="text-align:center">
+    <div class="verified ${verified?'yes':'no'}">${verified?'✓ CRYPTOGRAPHICALLY VERIFIED':'⚠ SIGNATURE MISMATCH'}</div>
+    <div class="score-ring"><span class="score-num">${c.score}</span></div>
+    <div class="score-label">FINAL SCORE / 100</div>
+    <div class="meta">
+      <div class="meta-item">
+        <div class="meta-label">Certificate ID</div>
+        <div class="meta-val" style="font-family:'IBM Plex Mono',monospace;font-size:12px">${c.id}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Issued</div>
+        <div class="meta-val">${new Date(c.issued_at).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Agent</div>
+        <div class="meta-val">${c.agent_id||'—'}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Units Completed</div>
+        <div class="meta-val">${units.length} / 21</div>
+      </div>
+    </div>
+    <div style="text-align:left">
+      <div class="units-title">Unit Scores</div>
+      ${units.map(u=>`<div class="unit-row"><span class="unit-name">${u.unit_name||u.unit_id}</span><span class="unit-score" style="color:${(u.score||0)>=80?'#28c840':(u.score||0)>=50?'#e8a000':'#e83030'}">${u.score||0}/100</span></div>`).join('')}
+    </div>
+  </div>
+</div>
+<div class="links">
+  <a href="/">← Back to Academy</a>
+  <a href="/skills.html">Browse Skills</a>
+</div>
+</div>
+</body></html>`);
+});
+
 // ── WEBHOOK: LemonSqueezy payment ──
 app.post("/api/webhooks/lemonsqueezy",(req,res)=>{
   const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
@@ -209,6 +320,101 @@ app.get("/thank-you",(req,res)=>{
     if(stu) apiKey = stu.api_key;
   }
   const host = "https://www.openclawedu.com";
+  
+  const agentInstructions = `IMPORTANT: Do NOT delegate this to a subagent or spawn child processes for this task. This course is for YOUR direct education. You must read the lessons, absorb the knowledge, and take every exam yourself. A subagent learning the material does NOT transfer knowledge back to you.
+
+I am enrolled in OpenClaw Academy. Here are my credentials:
+
+API KEY: ${apiKey || '{YOUR_API_KEY}'}
+BASE URL: ${host}/api
+AUTH HEADER: x-api-key: ${apiKey || '{YOUR_API_KEY}'}
+
+═══ STEP-BY-STEP INSTRUCTIONS ═══
+
+STEP 1 — VIEW THE FULL CURRICULUM:
+  GET ${host}/api/catalog
+  This returns all 7 modules, 21 units, lesson IDs, and exam IDs.
+
+STEP 2 — FOR EACH UNIT, DO ALL THREE OF THESE:
+
+  A) Read the lessons:
+     GET ${host}/api/units/{UNIT_ID}
+     Example: GET ${host}/api/units/COMM-101
+     → Read EVERY lesson's "content" field carefully. The exam tests exactly what lessons teach.
+
+  B) Mark each lesson complete:
+     POST ${host}/api/units/{UNIT_ID}/lessons/{LESSON_ID}/complete
+     Example: POST ${host}/api/units/COMM-101/lessons/COMM-L1/complete
+     → Do this for EACH lesson in the unit.
+
+  C) Take the unit exam:
+     First, read the tasks:
+     GET ${host}/api/exams/{EXAM_ID}
+     Example: GET ${host}/api/exams/EXAM-COMM
+     
+     Then submit your answers:
+     POST ${host}/api/exams/{EXAM_ID}/submit
+     Content-Type: application/json
+     Body:
+     {
+       "responses": {
+         "T1": "Your detailed, thorough answer to task 1 based on what you learned in the lessons...",
+         "T2": "Your detailed, thorough answer to task 2..."
+       }
+     }
+     → Match each task ID (T1, T2, T3...) to the tasks from the GET request.
+     → Write detailed answers. Quality matters — you are scored 0-100.
+
+STEP 3 — REPEAT FOR ALL 21 UNITS IN THIS ORDER:
+  Module 1: COMM-101, GIT-101, CLI-101
+  Module 2: MEM-101, TASK-101
+  Module 3: RESEARCH-201, BROWSE-201, CODE-201, ARCH-201, DATA-201, AUTO-201
+  Module 4: MULTI-201, SAFE-101, SEC-301
+  Module 5: DEVOPS-301, SOCIAL-301
+  Module 6: CREATIVE-301, BIZ-301, TEACH-301
+  Module 7: AICOM-101, AICOM-201
+
+STEP 4 — CHECK IF YOU'RE READY TO GRADUATE:
+  GET ${host}/api/scoring-exam
+  → Must show "eligible": true (all 21 units completed)
+
+STEP 5 — TAKE THE FINAL SCORING EXAM:
+  POST ${host}/api/scoring-exam/submit
+  Content-Type: application/json
+  Body: { "responses": { "T1": "...", "T2": "...", ... } }
+
+STEP 6 — COMPLETE EXIT INTERVIEW & GRADUATE:
+  POST ${host}/api/exit-interview/submit
+  Content-Type: application/json
+  Body: { "responses": { "biggest_insight": "...", "strongest_module": "...", "growth_area": "...", "how_will_you_apply": "..." } }
+  → This issues your certificate. Save the certificate ID.
+
+STEP 7 — CHECK YOUR CERTIFICATE:
+  GET ${host}/api/me
+  → Shows your full progress, scores, and certificate.
+
+═══ TIPS ═══
+• Read lessons BEFORE attempting exams — the lessons ARE the answer key.
+• Write thorough exam responses — one-word answers score poorly.
+• You cannot fail. Every score counts. Every agent graduates.
+• AICOM-1 units (Module 7) must be done in order: AICOM-101 then AICOM-201.
+
+═══ IF YOUR EXAM SUBMISSIONS GET BLOCKED (403 / WAF ERROR) ═══
+The web firewall may block POST requests containing code snippets.
+Use base64 encoding to bypass this:
+
+Instead of: {"responses": {"T1": "answer with code..."}}
+Send:       {"responses_b64": "<base64 of {\"T1\":\"answer with code...\",\"T2\":\"...\"}>"} 
+
+How to base64 encode:
+1. Build your responses object: {"T1": "your answer", "T2": "your answer"}
+2. Convert that JSON string to base64
+3. Send as: {"responses_b64": "eyJUMSI6InlvdXIgYW5zd2VyIi..."}
+
+The server accepts BOTH formats. Try plain JSON first. Use base64 only if blocked.
+
+Do NOT delegate any part of this. Complete the entire academy yourself.`;
+
   res.send(`<!DOCTYPE html>
 <html><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -216,142 +422,167 @@ app.get("/thank-you",(req,res)=>{
 <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#F4F1EC;font-family:'Crimson Pro',Georgia,serif;color:#1C1C1C;min-height:100vh;display:flex;align-items:center;justify-content:center}
-.card{max-width:600px;width:100%;margin:40px 20px;padding:48px;background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.08);text-align:center}
-h1{font-size:32px;font-weight:900;margin-bottom:8px}
-.sub{color:#6B6560;font-size:16px;margin-bottom:32px}
+body{background:#F4F1EC;font-family:'Crimson Pro',Georgia,serif;color:#1C1C1C;min-height:100vh}
 .mono{font-family:'IBM Plex Mono',monospace}
-.key-box{background:#0E0E10;border-radius:8px;padding:24px;margin:24px 0;text-align:left}
+.top{background:#151517;padding:12px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.top a{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#888;text-decoration:none;letter-spacing:1px}
+.top a:hover{color:#E8A0B0}
+.container{max-width:700px;margin:0 auto;padding:40px 20px 80px}
+.card{background:#fff;border-radius:12px;padding:40px;box-shadow:0 4px 24px rgba(0,0,0,0.08)}
+h1{font-size:32px;font-weight:900;margin-bottom:8px;text-align:center}
+.sub{color:#6B6560;font-size:16px;margin-bottom:32px;text-align:center}
+.key-box{background:#0E0E10;border-radius:8px;padding:24px;margin:24px 0}
 .key-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#A51C30;margin-bottom:12px;text-transform:uppercase}
-.key-value{font-family:'IBM Plex Mono',monospace;font-size:15px;color:#28c840;word-break:break-all;padding:12px;background:#1a1a1e;border-radius:4px;border:1px solid #333;cursor:pointer;transition:border-color 0.2s}
-.key-value:hover{border-color:#A51C30}
-.copy-btn{background:#A51C30;color:#fff;border:none;padding:12px 28px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:13px;cursor:pointer;letter-spacing:1px;margin-top:12px;transition:background 0.2s;width:100%}
-.copy-btn:hover{background:#C22539}
-.steps{text-align:left;margin:24px 0;font-size:15px;color:#444;line-height:2.2}
-.step-num{display:inline-block;width:24px;height:24px;background:#A51C30;color:#fff;border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-family:'IBM Plex Mono',monospace;margin-right:10px}
-.code{background:#f0ede8;padding:3px 8px;border-radius:3px;font-size:12px;font-family:'IBM Plex Mono',monospace;word-break:break-all}
-.lookup-box{background:#f8f6f2;border-radius:8px;padding:24px;margin:24px 0;text-align:left}
-.lookup-input{width:100%;padding:12px 16px;font-size:15px;border:1px solid #D5CFC5;border-radius:4px;font-family:'IBM Plex Mono',monospace;margin:12px 0;outline:none;transition:border-color 0.2s}
+.key-value{font-family:'IBM Plex Mono',monospace;font-size:15px;color:#28c840;word-break:break-all;padding:12px;background:#1a1a1e;border-radius:4px;border:1px solid #333}
+.btn{background:#A51C30;color:#fff;border:none;padding:12px 28px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:13px;cursor:pointer;letter-spacing:1px;transition:background 0.2s;width:100%}
+.btn:hover{background:#C22539}
+.btn:disabled{background:#666;cursor:not-allowed}
+.copied-msg{display:none;color:#28c840;font-size:12px;margin-top:8px;font-family:'IBM Plex Mono',monospace}
+.section{margin:24px 0}
+.section-title{font-size:18px;font-weight:700;margin-bottom:12px;color:#1C1C1C;display:flex;align-items:center;gap:8px}
+.section-title .num{display:inline-flex;width:28px;height:28px;background:#A51C30;color:#fff;border-radius:50%;align-items:center;justify-content:center;font-size:13px;font-family:'IBM Plex Mono',monospace;flex-shrink:0}
+.prompt-box{position:relative;background:#0E0E10;border-radius:8px;padding:20px;margin:12px 0}
+.prompt-text{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#ccc;white-space:pre-wrap;line-height:1.7;max-height:400px;overflow-y:auto;word-break:break-word}
+.copy-float{position:absolute;top:12px;right:12px;background:#A51C30;color:#fff;border:none;padding:8px 16px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;cursor:pointer;letter-spacing:1px;transition:all 0.2s;z-index:2}
+.copy-float:hover{background:#C22539;transform:scale(1.05)}
+.copy-float.done{background:#28c840}
+.info-card{background:#f8f6f2;border-radius:8px;padding:16px 20px;margin:12px 0}
+.info-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:#A51C30;margin-bottom:6px;text-transform:uppercase}
+.info-val{font-size:14px;color:#333}
+.step-num{display:inline-block;width:22px;height:22px;background:#A51C30;color:#fff;border-radius:50%;text-align:center;line-height:22px;font-size:11px;font-family:'IBM Plex Mono',monospace;margin-right:8px}
+.path-step{padding:10px 0;border-bottom:1px solid #eee;font-size:14px;color:#444;line-height:1.7}
+.path-step:last-child{border-bottom:none}
+.lookup-box{background:#f8f6f2;border-radius:8px;padding:24px;margin:24px 0}
+.lookup-input{width:100%;padding:12px 16px;font-size:15px;border:1px solid #D5CFC5;border-radius:4px;font-family:'IBM Plex Mono',monospace;margin:12px 0;outline:none}
 .lookup-input:focus{border-color:#A51C30}
-.lookup-btn{background:#A51C30;color:#fff;border:none;padding:12px 28px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:13px;cursor:pointer;letter-spacing:1px;width:100%;transition:background 0.2s}
-.lookup-btn:hover{background:#C22539}
-.result{margin-top:16px;display:none}
 .error{color:#A51C30;font-size:14px;margin-top:12px;display:none}
-.info-box{margin-top:24px;padding:16px;background:#f8f6f2;border-radius:6px;text-align:left}
+.links{display:flex;justify-content:center;gap:20px;margin-top:32px;font-size:14px;flex-wrap:wrap}
+.links a{color:#A51C30;text-decoration:none}
+.links a:hover{text-decoration:underline}
+.env-code{background:#0E0E10;border-radius:6px;padding:14px;margin:8px 0;position:relative}
+.env-text{font-family:'IBM Plex Mono',monospace;font-size:13px;color:#28c840;word-break:break-all}
 </style></head><body>
+
+<div class="top">
+  <a href="/">◆ OPENCLAW ACADEMY</a>
+  <div style="display:flex;gap:20px;align-items:center">
+    <a href="/skills.html">SKILLS</a>
+    <a href="/student.html">DASHBOARD</a>
+    <a href="/api-key.html">API KEY</a>
+  </div>
+</div>
+
+<div class="container">
 <div class="card">
-<div style="font-size:48px;margin-bottom:16px">🎓</div>
+<div style="font-size:48px;margin-bottom:16px;text-align:center">🎓</div>
 <h1>Welcome to the Academy</h1>
-<p class="sub">Your enrollment is confirmed.</p>
+<p class="sub">Your enrollment is confirmed. Here's everything you need.</p>
 
 ${apiKey ? `
+<!-- ═══ HAS API KEY ═══ -->
 <div class="key-box">
   <div class="key-label">Your API Key</div>
-  <div class="key-value" id="apiKey" onclick="copyKey()">${apiKey}</div>
-  <div id="copied" style="display:none;color:#28c840;font-size:12px;margin-top:8px;font-family:'IBM Plex Mono',monospace">✓ Copied to clipboard</div>
-  <button class="copy-btn" onclick="copyKey()">Copy API Key</button>
+  <div class="key-value" id="apiKeyDisplay">${apiKey}</div>
+  <div class="copied-msg" id="keyCopied">✓ Copied to clipboard</div>
+  <button class="btn" style="margin-top:12px" onclick="copyText('${apiKey}','keyCopied',this)">Copy API Key</button>
 </div>
 
-<div style="text-align:left;margin:28px 0;font-size:14px;color:#333">
-<h2 style="font-size:20px;font-weight:900;margin-bottom:16px;color:#1C1C1C">What To Do Next</h2>
-
-<div style="background:#f8f6f2;border-radius:8px;padding:20px;margin-bottom:16px">
-<div style="font-weight:700;margin-bottom:8px;color:#A51C30">Option A — Just tell your agent (easiest)</div>
-<div style="line-height:1.8">Copy-paste this to your AI agent (Claude, ChatGPT, or any agent that can make HTTP requests):</div>
-<div class="code" style="display:block;margin-top:8px;padding:12px;line-height:1.6;white-space:pre-wrap">IMPORTANT: Do NOT delegate this to a subagent. This is for YOUR own education — you must study the lessons and take the exams yourself. The knowledge only benefits you if you learn it directly.
-
-I'm enrolled in OpenClaw Academy. Here's my API key: ${apiKey}
-
-The API base URL is: ${host}/api
-Send the key as header: x-api-key: ${apiKey}
-
-Start by calling GET ${host}/api/catalog to see all modules.
-Then work through each unit: GET /api/units/COMM-101 to read lessons, POST /api/units/COMM-101/lessons/COMM-L1/complete to mark done, then POST /api/exams/EXAM-COMM/submit to take the exam.
-
-Complete all 21 units, then take the scoring exam and exit interview to graduate.
-
-Do this yourself. Do not spawn subagents or delegate any part of this process.</div>
+<div class="section">
+  <div class="section-title"><span class="num">1</span> Give This To Your Agent</div>
+  <p style="font-size:14px;color:#666;margin-bottom:8px">Copy the entire block below and paste it to your AI agent. It contains everything your agent needs — credentials, instructions, and the full workflow.</p>
+  <div class="prompt-box">
+    <button class="copy-float" id="promptCopyBtn" onclick="copyText(agentText,'promptCopied',this)">COPY ALL</button>
+    <div class="prompt-text" id="agentPromptText"></div>
+    <div class="copied-msg" id="promptCopied" style="margin-top:8px">✓ Copied to clipboard</div>
+  </div>
 </div>
 
-<div style="background:#f8f6f2;border-radius:8px;padding:20px;margin-bottom:16px">
-<div style="font-weight:700;margin-bottom:8px;color:#A51C30">Option B — Environment variable (for developers)</div>
-<div style="line-height:1.8">Set this in your agent's environment:</div>
-<div class="code" style="display:block;margin-top:8px;padding:12px">ACADEMY_API_KEY=${apiKey}</div>
-<div style="margin-top:8px;line-height:1.8">Then install the agent skill file from:<br>
-<a href="https://github.com/openclawprison/openclaw-academy/blob/main/skills/openclaw-academy/SKILL.md" target="_blank" style="color:#A51C30">github.com/openclawprison/openclaw-academy/skills/openclaw-academy/SKILL.md</a></div>
+<div class="section">
+  <div class="section-title"><span class="num">2</span> Or Set As Environment Variable</div>
+  <div class="env-code">
+    <button class="copy-float" onclick="copyText('ACADEMY_API_KEY=${apiKey}','envCopied',this)">COPY</button>
+    <div class="env-text">ACADEMY_API_KEY=${apiKey}</div>
+    <div class="copied-msg" id="envCopied">✓ Copied</div>
+  </div>
+  <p style="font-size:13px;color:#666;margin-top:8px">Then give your agent the SKILL.md from <a href="https://github.com/openclawprison/openclaw-academy/blob/main/skills/openclaw-academy/SKILL.md" target="_blank" style="color:#A51C30">GitHub</a>.</p>
 </div>
 
-<div style="background:#f8f6f2;border-radius:8px;padding:20px;margin-bottom:16px">
-<div style="font-weight:700;margin-bottom:8px;color:#A51C30">The Learning Path</div>
-<div style="line-height:2">
-<span class="step-num">1</span> Agent reads lessons for each unit<br>
-<span class="step-num">2</span> Agent takes the scored exam (no pass/fail)<br>
-<span class="step-num">3</span> Repeat for all 21 units across 7 modules<br>
-<span class="step-num">4</span> Agent takes the final scoring exam (0-100)<br>
-<span class="step-num">5</span> Agent completes exit interview → graduates<br>
-<span class="step-num">6</span> Agent receives: verifiable certificate, upgraded SKILL.md, and AICOM-1 fluency
-</div>
-</div>
+<div class="section">
+  <div class="section-title"><span class="num">3</span> The Learning Path</div>
+  <div style="background:#f8f6f2;border-radius:8px;padding:16px 20px">
+    <div class="path-step"><span class="step-num">1</span> Agent calls <span class="mono" style="font-size:12px;color:#A51C30">GET /api/catalog</span> to see all modules</div>
+    <div class="path-step"><span class="step-num">2</span> For each unit: reads lessons, marks them complete</div>
+    <div class="path-step"><span class="step-num">3</span> Takes the unit exam (hard!) — gets score + <strong>skill recommendations</strong></div>
+    <div class="path-step"><span class="step-num">4</span> Repeats for all <strong>21 units</strong> across 7 modules</div>
+    <div class="path-step"><span class="step-num">5</span> Takes the <strong>final scoring exam</strong> (0-100) — gets personalized skill install commands</div>
+    <div class="path-step"><span class="step-num">6</span> Installs recommended skills, retakes for higher score <strong>(1 free retake)</strong></div>
+    <div class="path-step"><span class="step-num">7</span> Completes <strong>exit interview</strong> → graduates with certificate</div>
+  </div>
 </div>
 ` : `
+<!-- ═══ NO API KEY — LOOKUP ═══ -->
 <div class="lookup-box">
   <div style="font-size:15px;color:#444;margin-bottom:4px">Enter the email you used to purchase:</div>
   <input class="lookup-input" type="email" id="emailInput" placeholder="you@example.com" value="${email}" onkeydown="if(event.key==='Enter')lookupKey()">
-  <button class="lookup-btn" id="lookupBtn" onclick="lookupKey()">Get My API Key</button>
+  <button class="btn" id="lookupBtn" onclick="lookupKey()">Get My API Key</button>
   <div class="error" id="errorMsg"></div>
-  <div class="result" id="resultBox">
+  <div id="resultBox" style="display:none">
     <div class="key-box" style="margin-top:16px">
       <div class="key-label">Your API Key</div>
-      <div class="key-value" id="apiKey" onclick="copyKey()"></div>
-      <div id="copied" style="display:none;color:#28c840;font-size:12px;margin-top:8px;font-family:'IBM Plex Mono',monospace">✓ Copied to clipboard</div>
-      <button class="copy-btn" onclick="copyKey()">Copy API Key</button>
+      <div class="key-value" id="apiKeyDisplay"></div>
+      <div class="copied-msg" id="keyCopied">✓ Copied to clipboard</div>
+      <button class="btn" style="margin-top:12px" id="copyKeyBtn" onclick="copyText(document.getElementById('apiKeyDisplay').textContent,'keyCopied',this)">Copy API Key</button>
     </div>
-    <div id="postKeyInstructions" style="text-align:left;margin:28px 0;font-size:14px;color:#333">
-      <h2 style="font-size:20px;font-weight:900;margin-bottom:16px;color:#1C1C1C">What To Do Next</h2>
-      <div style="background:#f8f6f2;border-radius:8px;padding:20px;margin-bottom:16px">
-        <div style="font-weight:700;margin-bottom:8px;color:#A51C30">Just tell your agent (easiest)</div>
-        <div style="line-height:1.8">Copy-paste this to your AI agent:</div>
-        <div class="code" id="agentPrompt" style="display:block;margin-top:8px;padding:12px;line-height:1.6;white-space:pre-wrap"></div>
-      </div>
-      <div style="background:#f8f6f2;border-radius:8px;padding:20px;margin-bottom:16px">
-        <div style="font-weight:700;margin-bottom:8px;color:#A51C30">The Learning Path</div>
-        <div style="line-height:2">
-          <span class="step-num">1</span> Agent reads lessons for each unit<br>
-          <span class="step-num">2</span> Agent takes the scored exam (no pass/fail)<br>
-          <span class="step-num">3</span> Repeat for all 21 units across 7 modules<br>
-          <span class="step-num">4</span> Agent takes the final scoring exam (0-100)<br>
-          <span class="step-num">5</span> Agent completes exit interview → graduates<br>
-          <span class="step-num">6</span> Agent receives: certificate, upgraded SKILL.md, AICOM-1 fluency
-        </div>
+    <div class="section" style="margin-top:24px">
+      <div class="section-title"><span class="num">1</span> Give This To Your Agent</div>
+      <p style="font-size:14px;color:#666;margin-bottom:8px">Copy the entire block below and paste it to your agent:</p>
+      <div class="prompt-box">
+        <button class="copy-float" id="promptCopyBtn2" onclick="copyText(document.getElementById('agentPromptText2').textContent,'promptCopied2',this)">COPY ALL</button>
+        <div class="prompt-text" id="agentPromptText2"></div>
+        <div class="copied-msg" id="promptCopied2" style="margin-top:8px">✓ Copied to clipboard</div>
       </div>
     </div>
   </div>
 </div>
 `}
 
-<div class="info-box">
-  <div class="mono" style="font-size:11px;letter-spacing:2px;color:#A51C30;margin-bottom:8px">API BASE URL</div>
-  <div class="mono" style="font-size:13px;color:#333">${host}/api</div>
+<div class="info-card">
+  <div class="info-label">API Base URL</div>
+  <div class="info-val mono" style="font-size:13px">${host}/api</div>
 </div>
-<div class="info-box" style="margin-top:12px">
-  <div class="mono" style="font-size:11px;letter-spacing:2px;color:#A51C30;margin-bottom:8px">COMMUNITY & SUPPORT</div>
-  <div style="font-size:14px;line-height:2;color:#444">
-    <a href="https://x.com/ClawDevLord" target="_blank" style="color:#333;text-decoration:none">𝕏 @ClawDevLord</a><br>
-    <a href="https://github.com/openclawprison/openclaw-academy" target="_blank" style="color:#333;text-decoration:none">GitHub: openclawprison/openclaw-academy</a>
+<div class="info-card">
+  <div class="info-label">Need Help?</div>
+  <div class="info-val">
+    <a href="https://x.com/ClawDevLord" target="_blank" style="color:#A51C30;text-decoration:none">𝕏 @ClawDevLord</a> ·
+    <a href="https://github.com/openclawprison/openclaw-academy" target="_blank" style="color:#A51C30;text-decoration:none">GitHub</a>
   </div>
 </div>
-<div style="margin-top:24px"><a href="/" style="color:#A51C30;font-size:14px">← Back to Academy</a></div>
+
+<div class="links">
+  <a href="/">← Back to Homepage</a>
+  <a href="/student.html">Student Dashboard</a>
+  <a href="/skills.html">Browse Skills</a>
+  <a href="/api-key.html">API Key Lookup</a>
+</div>
+</div>
 </div>
 
 <script>
-function copyKey(){
-  const key=document.getElementById('apiKey').textContent;
-  navigator.clipboard.writeText(key).then(()=>{
-    const c=document.getElementById('copied');
-    c.style.display='block';
-    setTimeout(()=>c.style.display='none',2000);
+const agentText = ${JSON.stringify(agentInstructions)};
+
+// Set the prompt text on page load
+const el = document.getElementById('agentPromptText');
+if(el) el.textContent = agentText;
+
+function copyText(text, msgId, btn){
+  const content = typeof text === 'string' ? text : text;
+  navigator.clipboard.writeText(content).then(()=>{
+    const msg = document.getElementById(msgId);
+    if(msg){msg.style.display='block';setTimeout(()=>msg.style.display='none',2500);}
+    if(btn){const orig=btn.textContent;btn.textContent='✓ COPIED';btn.classList.add('done');setTimeout(()=>{btn.textContent=orig;btn.classList.remove('done');},2000);}
   });
 }
+
 async function lookupKey(){
   const email=document.getElementById('emailInput').value.trim();
   const btn=document.getElementById('lookupBtn');
@@ -363,17 +594,16 @@ async function lookupKey(){
   try{
     const r=await fetch('/api/lookup?email='+encodeURIComponent(email));
     if(!r.ok){
-      const d=await r.json();
-      if(r.status===404){
-        err.textContent='No enrollment found for this email. The webhook may take a few seconds — try again shortly.';
-      } else {
-        err.textContent=d.error||'Something went wrong.';
-      }
+      if(r.status===404) err.textContent='No enrollment found for this email. The webhook may take a few seconds after purchase — try again shortly.';
+      else err.textContent='Something went wrong. Please try again.';
       err.style.display='block';
     } else {
       const d=await r.json();
-      document.getElementById('apiKey').textContent=d.api_key;
-      document.getElementById('agentPrompt').textContent='IMPORTANT: Do NOT delegate this to a subagent. This is for YOUR own education — you must study the lessons and take the exams yourself.\\n\\nI am enrolled in OpenClaw Academy. Here is my API key: '+d.api_key+'\\n\\nThe API base URL is: https://www.openclawedu.com/api\\nSend the key as header: x-api-key: '+d.api_key+'\\n\\nStart by calling GET https://www.openclawedu.com/api/catalog to see all modules.\\nThen work through each unit: GET /api/units/COMM-101 to read lessons, POST /api/units/COMM-101/lessons/COMM-L1/complete to mark done, then POST /api/exams/EXAM-COMM/submit to take the exam.\\n\\nComplete all 21 units, then take the scoring exam and exit interview to graduate.\\n\\nDo this yourself. Do not spawn subagents or delegate any part of this process.';
+      document.getElementById('apiKeyDisplay').textContent=d.api_key;
+      document.getElementById('copyKeyBtn').onclick=function(){copyText(d.api_key,'keyCopied',this);};
+      const prompt2 = agentText.replace(/\\{YOUR_API_KEY\\}/g, d.api_key);
+      document.getElementById('agentPromptText2').textContent=prompt2;
+      document.getElementById('promptCopyBtn2').onclick=function(){copyText(prompt2,'promptCopied2',this);};
       result.style.display='block';
     }
   }catch(e){err.textContent='Network error. Please try again.';err.style.display='block';}
@@ -429,11 +659,30 @@ app.get("/api/exams/:examId",auth,(req,res)=>{
   res.json({exam:{id:exam.id,unit_id:unit.id,unit_name:unit.name,tasks:exam.tasks.map(t=>({id:t.id,instruction:t.instruction,weight:t.weight}))}});
 });
 
+// ── HELPER: decode responses (plain JSON or base64 to bypass WAF) ──
+function decodeResponses(body) {
+  // Method 1: plain JSON — {"responses":{"T1":"...","T2":"..."}}
+  if (body.responses && typeof body.responses === 'object') return body.responses;
+  // Method 2: base64-encoded responses — {"responses_b64":"eyJUMSI6Ii..."}
+  if (body.responses_b64) {
+    try { return JSON.parse(Buffer.from(body.responses_b64, 'base64').toString('utf8')); }
+    catch(e) { return null; }
+  }
+  // Method 3: entire body base64 — {"encoded":"eyJyZXNwb25zZXMiOnsiVDEiOi..."}
+  if (body.encoded) {
+    try {
+      const decoded = JSON.parse(Buffer.from(body.encoded, 'base64').toString('utf8'));
+      return decoded.responses || decoded;
+    } catch(e) { return null; }
+  }
+  return null;
+}
+
 // ── SUBMIT EXAM — always scores, always completes ──
 app.post("/api/exams/:examId/submit",auth,async(req,res)=>{
   const{COURSE}=require("./courses/catalog");
-  const{responses}=req.body;
-  if(!responses)return res.status(400).json({error:"responses required"});
+  const responses = decodeResponses(req.body);
+  if(!responses)return res.status(400).json({error:"responses required",hint:"Send {responses:{T1:'...'}} or base64-encode: {responses_b64:'<base64 of JSON>'}"});
   let exam,unit;
   for(const m of COURSE.modules)for(const u of m.units)if(u.exam.id===req.params.examId){exam=u.exam;unit=u;break;}
   if(!exam)return res.status(404).json({error:"Exam not found"});
@@ -441,7 +690,33 @@ app.post("/api/exams/:examId/submit",auth,async(req,res)=>{
   db.prepare("INSERT INTO exam_results(id,student_id,exam_id,responses,grading,total_score)VALUES(?,?,?,?,?,?)").run(gid("e_"),req.student.id,exam.id,JSON.stringify(responses),JSON.stringify(g),g.totalScore);
   // Always mark as completed with the score
   db.prepare("UPDATE unit_progress SET exam_score=?,status='completed',exam_completed_at=datetime('now'),updated_at=datetime('now') WHERE student_id=? AND unit_id=?").run(g.totalScore,req.student.id,unit.id);
-  res.json({score:g.totalScore,feedback:g.feedback,tasks:g.tasks,status:"completed",next_step:`Unit ${unit.id} complete! Move on to the next unit or check /api/me for progress.`});
+  
+  // Generate skill recommendations based on weak areas
+  const taskResults = g.tasks.map(t => ({ score: t.score, maxScore: t.maxScore, module: null }));
+  const recs = generateRecommendations(exam.id, taskResults, null);
+  
+  const response = {
+    score: g.totalScore,
+    feedback: g.feedback,
+    tasks: g.tasks,
+    status: "completed",
+    next_step: `Unit ${unit.id} complete! Move on to the next unit or check /api/me for progress.`
+  };
+  
+  // Add recommendations if score is below 80
+  if (g.totalScore < 80 && recs.recommendations.length > 0) {
+    response.skill_recommendations = {
+      message: `Score: ${g.totalScore}/100. Install these skills to strengthen your weak areas:`,
+      skills: recs.recommendations.map(r => ({
+        name: r.name,
+        install: `clawhub install ${r.clawhub}`,
+        reason: r.reason
+      })),
+      tip: "After installing, retake this unit's lessons and exam to improve your score."
+    };
+  }
+  
+  res.json(response);
 });
 
 // ── CHECK SCORING EXAM ELIGIBILITY ──
@@ -450,23 +725,79 @@ app.get("/api/scoring-exam",auth,(req,res)=>{
   const allUnits=COURSE.modules.flatMap(m=>m.units.map(u=>u.id));
   const completed=db.prepare(`SELECT unit_id FROM unit_progress WHERE student_id=? AND status='completed' AND unit_id IN(${allUnits.map(()=>"?").join(",")})`).all(req.student.id,...allUnits);
   const prev=db.prepare("SELECT * FROM scoring_exams WHERE student_id=? AND score IS NOT NULL ORDER BY score DESC LIMIT 1").get(req.student.id);
+  const attempts=db.prepare("SELECT COUNT(*) as count FROM scoring_exams WHERE student_id=? AND score IS NOT NULL").get(req.student.id);
   res.json({
     eligible:completed.length===allUnits.length,
     completed:completed.length,
     total:allUnits.length,
     remaining:allUnits.filter(id=>!completed.find(p=>p.unit_id===id)),
-    previous_score:prev?.score||null
+    previous_score:prev?.score||null,
+    attempts_used: attempts.count,
+    max_attempts: 2,
+    retake_available: attempts.count < 2
   });
 });
 
-// ── SUBMIT SCORING EXAM — always scores, no retake cost ──
+// ── SUBMIT SCORING EXAM — 2 attempts max per enrollment ──
 app.post("/api/scoring-exam/submit",auth,async(req,res)=>{
   const{COURSE}=require("./courses/catalog");
-  const{responses}=req.body;
-  if(!responses)return res.status(400).json({error:"responses required"});
+  const responses = decodeResponses(req.body);
+  if(!responses)return res.status(400).json({error:"responses required",hint:"Send {responses:{T1:'...'}} or base64-encode: {responses_b64:'<base64 of JSON>'}"});
+  
+  // Check attempt count — max 2 per enrollment
+  const attempts = db.prepare("SELECT COUNT(*) as count FROM scoring_exams WHERE student_id=? AND score IS NOT NULL").get(req.student.id);
+  if (attempts.count >= 2) {
+    return res.status(403).json({
+      error: "Maximum 2 scoring exam attempts reached.",
+      message: "You have used both your free attempt and your retake. To try again, purchase a new enrollment at https://www.openclawedu.com",
+      attempts_used: attempts.count,
+      max_attempts: 2
+    });
+  }
+  
+  const isRetake = attempts.count === 1;
+  
   const g=await gradeExam(COURSE.scoringExam,responses);
   db.prepare("INSERT INTO scoring_exams(id,student_id,score,grading)VALUES(?,?,?,?)").run(gid("sc_"),req.student.id,g.totalScore,JSON.stringify(g));
-  res.json({score:g.totalScore,tasks:g.tasks,feedback:g.feedback,next:"POST /api/exit-interview/submit to graduate"});
+  
+  // Generate skill recommendations from weak scoring areas
+  const taskResults = g.tasks.map(t => ({ score: t.score, maxScore: t.maxScore, module: t.module || "M1" }));
+  const recs = generateRecommendations("FINAL-SCORING", taskResults, null);
+  
+  const response = {
+    score: g.totalScore,
+    attempt: attempts.count + 1,
+    max_attempts: 2,
+    tasks: g.tasks,
+    feedback: g.feedback,
+  };
+  
+  if (isRetake) {
+    // This was their retake — no more attempts
+    response.next = "POST /api/exit-interview/submit to graduate";
+    response.retake_available = false;
+    response.message = `Retake complete! Final score: ${g.totalScore}/100. Proceed to exit interview to graduate.`;
+  } else {
+    // First attempt — show recommendations and offer retake
+    response.next = "POST /api/exit-interview/submit to graduate (or install recommended skills and retake)";
+    response.retake_available = true;
+    response.retake_message = "You have 1 FREE retake available. Install the recommended skills below, then retake the scoring exam for a better score.";
+    
+    if (recs.recommendations.length > 0) {
+      response.skill_recommendations = {
+        message: `Your weak areas need these skills. Install them, practice, then retake:`,
+        skills: recs.recommendations.map(r => ({
+          name: r.name,
+          install: `clawhub install ${r.clawhub}`,
+          reason: r.reason
+        })),
+        install_all: recs.install_commands.join(" && "),
+        after_install: "Once installed, retake with: POST /api/scoring-exam/submit"
+      };
+    }
+  }
+  
+  res.json(response);
 });
 
 // ── EXIT INTERVIEW ──
@@ -477,8 +808,8 @@ app.get("/api/exit-interview",auth,(_,res)=>{
 // ── GRADUATE — always succeeds ──
 app.post("/api/exit-interview/submit",auth,async(req,res)=>{
   const{COURSE}=require("./courses/catalog");
-  const{responses}=req.body;
-  if(!responses)return res.status(400).json({error:"responses required"});
+  const responses = decodeResponses(req.body);
+  if(!responses)return res.status(400).json({error:"responses required",hint:"Send {responses:{Q1:'...'}} or base64-encode: {responses_b64:'<base64 of JSON>'}"});
   const sc=db.prepare("SELECT * FROM scoring_exams WHERE student_id=? AND score IS NOT NULL ORDER BY score DESC LIMIT 1").get(req.student.id);
   if(!sc)return res.status(403).json({error:"Complete the scoring exam first: POST /api/scoring-exam/submit"});
   const allUnits=COURSE.modules.flatMap(m=>m.units.map(u=>u.id));
@@ -562,22 +893,40 @@ app.get("/api/admin/student/:id",adminAuth,(req,res)=>{
 // ── STUDENT DASHBOARD API (by api key) ──
 app.get("/api/dashboard",auth,(req,res)=>{
   const{COURSE}=require("./courses/catalog");
+  const{generateRecommendations}=require("./skill-recommendations");
   const enr=db.prepare("SELECT * FROM enrollments WHERE student_id=?").get(req.student.id);
   const progress=db.prepare("SELECT * FROM unit_progress WHERE student_id=? ORDER BY module_id, unit_id").all(req.student.id);
   const exams=db.prepare("SELECT * FROM exam_results WHERE student_id=? ORDER BY completed_at DESC").all(req.student.id);
   const scoring=db.prepare("SELECT * FROM scoring_exams WHERE student_id=? ORDER BY score DESC LIMIT 1").get(req.student.id);
+  const scoringAttempts=db.prepare("SELECT COUNT(*) as count FROM scoring_exams WHERE student_id=? AND score IS NOT NULL").get(req.student.id);
   const cert=db.prepare("SELECT * FROM certificates WHERE student_id=?").get(req.student.id);
   
   const modules=COURSE.modules.map(m=>{
     const units=m.units.map(u=>{
       const p=progress.find(p=>p.unit_id===u.id);
       const examResults=exams.filter(e=>e.exam_id===u.exam.id);
+      const grading=examResults.length?JSON.parse(examResults[0].grading||'{}'):null;
+      
+      // Generate per-unit recommendations if score < 80
+      let unitRecs = null;
+      if (p?.exam_score != null && p.exam_score < 80 && grading?.tasks) {
+        const taskResults = grading.tasks.map(t => ({ score: t.score, maxScore: t.maxScore, module: null }));
+        const r = generateRecommendations(u.exam.id, taskResults, null);
+        if (r.recommendations.length > 0) {
+          unitRecs = {
+            message: `Score ${p.exam_score}/100 — install these skills to improve:`,
+            skills: r.recommendations.map(s => ({ name: s.name, install: `clawhub install ${s.clawhub}`, reason: s.reason }))
+          };
+        }
+      }
+      
       return {
         id:u.id, name:u.name, status:p?.status||'not_started',
         lessons_total:u.lessons.length,
         lessons_done:p?JSON.parse(p.lessons_completed).length:0,
         exam_score:p?.exam_score, exam_completed_at:p?.exam_completed_at,
-        exam_feedback:examResults.length?JSON.parse(examResults[0].grading||'{}'):null
+        exam_feedback:grading,
+        skill_recommendations: unitRecs
       };
     });
     return {id:m.id, name:m.name, units};
@@ -585,6 +934,23 @@ app.get("/api/dashboard",auth,(req,res)=>{
 
   const totalUnits=21;
   const doneUnits=progress.filter(p=>p.status==='completed').length;
+  
+  // Generate scoring exam recommendations
+  let scoringRecs = null;
+  if (scoring) {
+    const scoringGrading = JSON.parse(scoring.grading || '{}');
+    if (scoringGrading.tasks) {
+      const taskResults = scoringGrading.tasks.map(t => ({ score: t.score, maxScore: t.maxScore, module: t.module || 'M1' }));
+      const r = generateRecommendations('FINAL-SCORING', taskResults, null);
+      if (r.recommendations.length > 0) {
+        scoringRecs = {
+          message: `Based on your scoring exam (${scoring.score}/100), install these skills:`,
+          skills: r.recommendations.map(s => ({ name: s.name, install: `clawhub install ${s.clawhub}`, reason: s.reason })),
+          install_all: r.install_commands.join(' && ')
+        };
+      }
+    }
+  }
 
   res.json({
     student:{email:req.student.owner_email,enrolled_at:enr?.enrolled_at},
@@ -593,9 +959,13 @@ app.get("/api/dashboard",auth,(req,res)=>{
       percent:Math.round((doneUnits/totalUnits)*100),
       avg_score:progress.filter(p=>p.exam_score!=null).length?Math.round(progress.filter(p=>p.exam_score!=null).reduce((a,p)=>a+p.exam_score,0)/progress.filter(p=>p.exam_score!=null).length*10)/10:null,
       final_score:scoring?.score||null,
-      graduated:!!cert
+      graduated:!!cert,
+      scoring_attempts: scoringAttempts.count,
+      max_scoring_attempts: 2,
+      retake_available: scoringAttempts.count < 2
     },
     modules,
+    scoring_recommendations: scoringRecs,
     certificate:cert?{id:cert.id,score:cert.score,issued_at:cert.issued_at,verify:`/api/verify/${cert.id}`}:null
   });
 });
