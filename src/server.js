@@ -72,37 +72,71 @@ async function gradeExam(exam, responses) {
     results.push({id:task.id, score:sc, maxScore:task.weight, feedback:fb});
   }
   const total = Math.round((totalS/totalW)*100);
-  return { totalScore:total, tasks:results, feedback: total>=90?"Outstanding work!":total>=70?"Solid performance.":total>=50?"Good effort — review the feedback to strengthen weak areas.":"Keep studying — the feedback below will help you improve." };
+  return { totalScore:total, tasks:results, feedback: total>=90?"Exceptional — you demonstrated real mastery.":total>=70?"Solid. Review feedback on missed criteria.":total>=50?"Below expectations — install recommended skills and retake.":"Significant gaps detected. Install the recommended skills, practice with them, then retake this exam." };
 }
 
 async function llmGrade(task, response) {
   const key = process.env.ANTHROPIC_API_KEY;
   if(!key) throw new Error("No key");
-  const rubric = task.rubric ? task.rubric.map((r,i)=>`${i+1}. ${r}`).join("\n") : "Grade based on thoroughness, accuracy, and practical applicability of the response to the task instruction.";
+  const rubric = task.rubric ? task.rubric.map((r,i)=>`${i+1}. ${r}`).join("\n") : "Grade based on thoroughness, accuracy, and practical applicability.";
   const res = await fetch("https://api.anthropic.com/v1/messages",{
     method:"POST",
     headers:{"Content-Type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01"},
-    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:`Grade this exam response.\n\nTASK: ${task.instruction}\n\nRUBRIC:\n${rubric}\n\nRESPONSE:\n${response}\n\nRespond ONLY with JSON: {"score":0-100,"feedback":"2-3 sentences"}`}]})
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,messages:[{role:"user",content:`You are a STRICT exam grader for a technical academy. Grade this response HARSHLY.
+
+GRADING RULES — follow these exactly:
+- Start at 0 and ADD points only for criteria that are FULLY met
+- Each rubric criterion is worth ${Math.round(100/(task.rubric?.length||10))} points
+- A criterion is FULLY MET only if the response contains the SPECIFIC detail required — not a vague mention
+- If a criterion says a specific number/value/command, the response MUST have that EXACT value — close is 0 points
+- Vague, generic, or "sounds about right" answers get 0 for that criterion
+- If the response uses filler phrases like "you could do X" or "something like" instead of concrete specifics, penalize heavily
+- Long responses that pad with irrelevant detail should NOT score higher than short precise ones
+- If the task asks to find N items (bugs, vulnerabilities, issues), award proportional credit: finding 80% earns ~60% of points, finding 100% earns full points. Do NOT give 0 for missing one item.
+- Code that wouldn't actually run scores low (not 0) for code-related criteria — give partial credit for correct logic with syntax issues
+- Math that is wrong scores 0 for that specific calculation, but other correct calculations still earn their points
+
+TASK INSTRUCTION:
+${task.instruction}
+
+RUBRIC CRITERIA (each worth ~${Math.round(100/(task.rubric?.length||10))} points):
+${rubric}
+
+STUDENT RESPONSE:
+${response}
+
+Grade each criterion individually. Be merciless about precision.
+Respond ONLY with JSON: {"score":0-100,"feedback":"2-3 sentences explaining what was wrong or missing. Be specific about which criteria failed."}`}]})
   });
   const data = await res.json();
   const text = data.content?.[0]?.text||"";
-  return JSON.parse(text.match(/\{[\s\S]*\}/)?.[0]||'{"score":50,"feedback":"Could not parse"}');
+  return JSON.parse(text.match(/\{[\s\S]*\}/)?.[0]||'{"score":30,"feedback":"Could not parse grading response."}');
 }
 
 function heurGrade(task, response) {
-  if(!response||response.trim().length<20) return {score:10,feedback:"Response too short — expand your answer."};
-  let s=40;
+  if(!response||response.trim().length<50) return {score:5,feedback:"Response too short or empty — this exam requires detailed, specific answers."};
+  let s=10; // Start at 10 not 40
   const l=response.toLowerCase();
   if(task.rubric && Array.isArray(task.rubric)){
-    for(const c of task.rubric){const kw=c.toLowerCase().split(/\s+/).filter(w=>w.length>4);if(kw.filter(k=>l.includes(k)).length>=2)s+=10;else if(kw.filter(k=>l.includes(k)).length>=1)s+=5;}
+    let met=0;
+    const perCrit = Math.round(80/(task.rubric.length));
+    for(const c of task.rubric){
+      const kw=c.toLowerCase().split(/\s+/).filter(w=>w.length>4);
+      // Require at least 3 keyword matches per criterion (stricter)
+      const matches = kw.filter(k=>l.includes(k)).length;
+      if(matches>=3){ s+=perCrit; met++; }
+      else if(matches>=2){ s+=Math.round(perCrit*0.5); met++; }
+      // 0-1 matches = 0 points for this criterion
+    }
+    // Bonus only if majority of criteria met
+    if(met < task.rubric.length * 0.5) s = Math.min(s, 35);
   } else {
-    // No rubric — score based on length/effort and keyword density from instruction
     const instrWords=task.instruction.toLowerCase().split(/\s+/).filter(w=>w.length>4);
     const matched=instrWords.filter(k=>l.includes(k)).length;
-    s+=Math.min(matched*3,30);
+    s+=Math.min(matched*2,20);
   }
-  if(response.length>500)s+=5;if(response.length>1000)s+=5;
-  return{score:Math.min(s,95),feedback:s>=80?"Good coverage.":"Cover more rubric points for a higher score."};
+  // No bonus for length — long fluffy answers shouldn't score higher
+  return{score:Math.min(s,85),feedback:s>=60?"Decent coverage but check precision.":"Many rubric criteria not met — responses need specific details, exact values, and working code/commands."};
 }
 
 // ── SKILL.MD GENERATION ──
