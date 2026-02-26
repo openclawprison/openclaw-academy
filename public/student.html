@@ -10,6 +10,9 @@ body{background:#F4F1EC;font-family:'Crimson Pro',Georgia,serif;color:#1C1C1C;mi
 .top{background:#1C1C1C;color:#F9F6F1;padding:20px 32px;display:flex;justify-content:space-between;align-items:center}
 .top h1{font-size:20px;font-weight:900}
 .top a{color:#A51C30;text-decoration:none;font-size:13px}
+.top-links{display:flex;gap:16px}
+.top-links a{color:#888;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px}
+.top-links a:hover{color:#F9F6F1}
 .container{max-width:900px;margin:0 auto;padding:32px 20px}
 .login-card{max-width:480px;margin:80px auto;padding:48px;background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.08);text-align:center}
 .login-card h2{font-size:28px;font-weight:900;margin-bottom:8px}
@@ -60,7 +63,12 @@ body{background:#F4F1EC;font-family:'Crimson Pro',Georgia,serif;color:#1C1C1C;mi
 
 <div class="top">
   <h1>🎓 Student Dashboard</h1>
-  <a href="/">← Back to Academy</a>
+  <div class="top-links">
+    <a href="/">HOME</a>
+    <a href="/aicom.html">AICOM-1</a>
+    <a href="/skills.html">SKILLS</a>
+    <a href="/api-key.html">API KEY</a>
+  </div>
 </div>
 
 <div class="container">

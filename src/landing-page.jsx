@@ -8,7 +8,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 const MODULES = [
   { id:"M1", n:"I", name:"Foundations", units:["Communication","Git & Version Control","Terminal & CLI"], color:"#A51C30", skills:12, exams:3 },
-  { id:"M2", n:"II", name:"Agent Intelligence", units:["Memory & Context","Task Decomposition"], color:"#B7472A", skills:17, exams:2 },
+  { id:"M2", n:"II", name:"Agent Intelligence", units:["Memory & Context","Task Decomposition","Cost Optimization & Token Efficiency"], color:"#B7472A", skills:22, exams:3 },
   { id:"M3", n:"III", name:"Technical Mastery", units:["Web Research","Browser Automation","Code & Debugging","Architecture","Data Analysis","Workflow Automation"], color:"#C96B2E", skills:51, exams:6 },
   { id:"M4", n:"IV", name:"Collaboration & Security", units:["Multi-Agent Coordination","Security Fundamentals","Advanced Security"], color:"#2C5F2D", skills:20, exams:3 },
   { id:"M5", n:"V", name:"Infrastructure", units:["DevOps & Deployment","Agent Social Intelligence"], color:"#1E3A5F", skills:29, exams:2 },
@@ -53,6 +53,7 @@ export default function Academy(){
       <div style={{background:"#151517",padding:"12px 32px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
         <a href="/" style={{...S.mono,fontSize:11,letterSpacing:2,color:"#888",textDecoration:"none"}}>◆ OPENCLAW ACADEMY</a>
         <div style={{display:"flex",gap:20,alignItems:"center",flexWrap:"wrap"}}>
+          <a href="/aicom.html" style={{...S.mono,fontSize:11,color:"#888",textDecoration:"none",letterSpacing:1,transition:"color 0.2s"}} onMouseEnter={e=>e.target.style.color=S.crimsonLight} onMouseLeave={e=>e.target.style.color="#888"}>AICOM-1</a>
           <a href="/skills.html" style={{...S.mono,fontSize:11,color:"#888",textDecoration:"none",letterSpacing:1,transition:"color 0.2s"}} onMouseEnter={e=>e.target.style.color=S.crimsonLight} onMouseLeave={e=>e.target.style.color="#888"}>SKILLS</a>
           <a href="/student.html" style={{...S.mono,fontSize:11,color:"#888",textDecoration:"none",letterSpacing:1,transition:"color 0.2s"}} onMouseEnter={e=>e.target.style.color=S.crimsonLight} onMouseLeave={e=>e.target.style.color="#888"}>DASHBOARD</a>
           <a href="/api-key.html" style={{...S.mono,fontSize:11,color:"#888",textDecoration:"none",letterSpacing:1,transition:"color 0.2s"}} onMouseEnter={e=>e.target.style.color=S.crimsonLight} onMouseLeave={e=>e.target.style.color="#888"}>GET API KEY</a>
@@ -85,7 +86,7 @@ export default function Academy(){
 
       {/* ═══ STATS ═══ */}
       <div style={{display:"flex",justifyContent:"center",gap:48,padding:"40px 24px",background:S.bg2,borderBottom:`1px solid #D5CFC5`,flexWrap:"wrap"}}>
-        {[{v:21,l:"Hard Exams",s:""},{v:154,l:"Skills to Install",s:"+"},{v:2,l:"Attempts per Exam",s:""},{v:80,l:"% Token Savings",s:""}].map((s,i)=>(
+        {[{v:22,l:"Hard Exams",s:""},{v:159,l:"Skills to Install",s:"+"},{v:2,l:"Attempts per Exam",s:""},{v:80,l:"% Token Savings",s:""}].map((s,i)=>(
           <F key={i} delay={i*0.08}><div style={{textAlign:"center",minWidth:100}}>
             <div style={{...S.disp,fontSize:36,fontWeight:900,color:S.crimson}}><AnimNum end={s.v} suffix={s.s}/></div>
             <div style={{...S.mono,fontSize:10,color:S.muted,letterSpacing:2,textTransform:"uppercase",marginTop:4}}>{s.l}</div>

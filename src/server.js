@@ -270,7 +270,7 @@ body{background:#F4F1EC;font-family:'Crimson Pro',Georgia,serif;min-height:100vh
 </style></head><body>
 <div class="top">
   <a href="/">◆ OPENCLAW ACADEMY</a>
-  <div style="display:flex;gap:20px"><a href="/skills.html">SKILLS</a><a href="/student.html">DASHBOARD</a></div>
+  <div style="display:flex;gap:20px"><a href="/aicom.html">AICOM-1</a><a href="/skills.html">SKILLS</a><a href="/student.html">DASHBOARD</a></div>
 </div>
 <div class="container">
 <div class="cert">

@@ -348,6 +348,88 @@ const COURSE = {
               }
             ]
           }
+        },
+        {
+          "id": "COST-101",
+          "name": "Cost Optimization & Token Efficiency",
+          "skills": [
+            "caching-strategies",
+            "context-anchor",
+            "aicom-1",
+            "prompt-engineering",
+            "cost-optimization-cloud"
+          ],
+          "lessons": [
+            {
+              "id": "COST-L1",
+              "title": "Token Economics — Why Every Token Matters",
+              "content": "LLM pricing is token-based. GPT-4o: ~$2.50/1M input tokens, ~$10/1M output tokens. Claude Sonnet: ~$3/1M input, ~$15/1M output. Claude Opus: ~$15/1M input, ~$75/1M output. A single agent conversation averaging 4,000 tokens costs $0.01-0.06 depending on model. At 10,000 conversations/day, that is $100-600/day — $3,000-18,000/month. Token costs compound in multi-agent systems: if 3 agents coordinate on a task, each passing context to the next, total tokens can be 5-10x a single agent. Reducing tokens by 40% across the system saves $1,200-7,200/month. Key insight: input tokens are cheaper than output tokens (often 3-5x cheaper), so it is more cost-effective to give the agent detailed instructions (more input) that produce shorter, precise outputs (less output) than to give vague instructions that cause long exploratory outputs. Every unnecessary word in a system prompt that runs on every request costs money at scale."
+            },
+            {
+              "id": "COST-L2",
+              "title": "Context Window Management — The Biggest Cost Driver",
+              "content": "The #1 cost driver is context window size. Every message in a conversation accumulates: message 1 = 500 tokens, message 2 = 500 + 1000, message 3 = 500 + 1000 + 1500 = 3000 tokens sent. By message 20, you may be sending 50,000+ tokens per request. Strategies: (1) Conversation summarization — after N messages, summarize the conversation into a compact context block and start fresh. A 50,000-token conversation summarized to 2,000 tokens saves 96%. (2) Sliding window — keep only the last K messages plus a persistent summary. (3) Selective context — not every message needs full history. Classify requests: simple queries need minimal context, complex tasks need more. (4) Context compression — use structured formats (JSON, AICOM-1) instead of natural language in system prompts. AICOM-1 saves 60-80% on inter-agent messages. (5) Document chunking — when analyzing documents, send relevant chunks only, not the entire document every time. Use embeddings to find relevant sections first."
+            },
+            {
+              "id": "COST-L3",
+              "title": "Caching Strategies — Never Pay for the Same Answer Twice",
+              "content": "Caching is the highest-ROI optimization. Types: (1) Exact-match cache — hash the prompt, store the response, return cached response for identical prompts. Works for structured queries (data lookups, code generation from specs). Can save 30-50% of API calls. (2) Semantic cache — use embeddings to find similar (not identical) past prompts. If similarity > 0.95, return the cached response. Saves 10-30% additional. (3) Prompt prefix caching — Anthropic and OpenAI offer prefix caching: if multiple requests share the same system prompt prefix, tokens are cached server-side at 90% discount. Structure your prompts with static content first, dynamic content last. (4) Response caching layers — cache at multiple levels: in-memory (Redis, 1ms), disk (SQLite, 5ms), API-level (CDN, 20ms). Set TTL based on data freshness needs. (5) Tool result caching — if an agent calls the same API or reads the same file multiple times, cache the result for the session. (6) Precomputation — for predictable queries, precompute and store answers during off-peak hours."
+            },
+            {
+              "id": "COST-L4",
+              "title": "Model Selection & Routing — Right-Size Your Intelligence",
+              "content": "Not every task needs the most powerful model. Model routing sends each request to the cheapest model that can handle it well. Tier 1 (cheapest, ~$0.25/1M): Haiku/GPT-4o-mini — use for: classification, extraction, simple Q&A, formatting, translation, routing decisions. Tier 2 (mid, ~$3/1M): Sonnet/GPT-4o — use for: code generation, analysis, multi-step reasoning, content creation. Tier 3 (premium, ~$15/1M): Opus/o1 — use for: complex architecture decisions, novel problem-solving, high-stakes content, math proofs. Implementation: build a classifier (can be Tier 1 model) that categorizes incoming requests by complexity and routes them. Measure quality per tier and adjust thresholds. A well-tuned router sends 60% of traffic to Tier 1, 30% to Tier 2, and 10% to Tier 3, reducing average cost by 70%. Also consider: batch API (50% discount for non-urgent tasks), streaming vs non-streaming (same cost but better UX), and prompt caching discounts."
+            },
+            {
+              "id": "COST-L5",
+              "title": "Prompt Engineering for Cost — Shorter Prompts, Better Results",
+              "content": "Prompt optimization directly reduces costs. Techniques: (1) System prompt compression — audit your system prompt for redundancy. Many system prompts are 2,000+ tokens and can be compressed to 500 without quality loss. Remove examples that duplicate each other, use structured formats instead of prose. (2) Few-shot to zero-shot — few-shot examples cost tokens on every request. If your model performs well with zero-shot + clear instructions, remove the examples. Save 200-500 tokens per request. (3) Output format control — ask for JSON or structured output instead of prose. \"Return only a JSON object with keys: answer, confidence, source\" produces 50-token responses vs 200-token prose. (4) Early stopping — if you only need the first paragraph of a summary, set max_tokens to limit output length. Do not pay for tokens you will not use. (5) Batching — combine multiple simple tasks into one prompt: \"Classify these 10 emails\" instead of 10 separate API calls. Saves overhead tokens (system prompt sent once instead of 10 times). (6) Chain-of-thought control — CoT improves reasoning but costs tokens. Use it only for complex tasks, not simple ones."
+            },
+            {
+              "id": "COST-L6",
+              "title": "Infrastructure Cost Optimization — Beyond Token Pricing",
+              "content": "Total cost of running AI agents goes beyond API pricing. (1) Compute — if self-hosting models, right-size GPU instances. A single H100 costs ~$2/hour. Use spot instances for batch workloads (60-90% savings). Auto-scale: scale to 0 during off-hours. (2) Storage — vector databases for RAG grow fast. Prune old embeddings, use quantized vectors (int8 vs float32 = 4x less storage). Tiered storage: hot (SSD) for frequent, cold (S3) for archive. (3) Network — API calls have latency costs. Batch requests reduce round-trips. Use regional endpoints closest to your infrastructure. (4) Database — cache frequently-read data in Redis, not in LLM context. A Redis lookup costs $0.000001, an LLM \"memory retrieval\" costs $0.01 — 10,000x difference. (5) Monitoring — track cost per conversation, cost per task completion, cost per user. Set alerts at daily/weekly budgets. Build dashboards showing: API spend by model, cache hit rate, average tokens per request, cost per successful task. The best optimization is the one you can measure."
+            }
+          ],
+          "exam": {
+            "id": "EXAM-COST",
+            "tasks": [
+              {
+                "id": "T1",
+                "instruction": "Cost optimization scenario. You run a multi-agent customer support system. Current stats: 15,000 conversations/day, average 12 messages per conversation, average 800 tokens per message (input+output split: 600 input, 200 output), using Claude Sonnet at $3/1M input tokens and $15/1M output tokens. Calculate ALL of these with exact math shown: (A) Current daily token usage (input and output separately). (B) Current daily cost (input cost + output cost, show each). (C) Current monthly cost (30 days). Now implement these 3 optimizations and calculate the new cost for each: (D) Conversation summarization after message 6 — reduces average context from 800 to 350 tokens for messages 7-12. Calculate new daily tokens and cost. (E) Model routing — 60% of conversations are simple (route to Haiku at $0.25/1M input, $1.25/1M output), 30% medium (stay on Sonnet), 10% complex (upgrade to Opus at $15/1M input, $75/1M output). Calculate blended daily cost. (F) Prompt prefix caching — your 1,200-token system prompt qualifies for 90% cache discount on input tokens. Calculate savings. (G) Total monthly savings combining all 3 optimizations versus the original. Show dollar amount and percentage. Every calculation must show the full formula. Wrong math on any step loses points for that step.",
+                "rubric": [
+                  "A: Daily input = 15000*12*600 = 108M tokens, output = 15000*12*200 = 36M tokens",
+                  "B: Input cost = 108M * /1M = 24, Output cost = 36M * 5/1M = 40, Total = 64/day",
+                  "C: Monthly = 64 * 30 = 5,920",
+                  "D: Summarization math correct — messages 1-6 at 800, messages 7-12 at 350, new average calculated",
+                  "E: Model routing — 3 tiers calculated separately with correct per-tier rates, then summed",
+                  "F: Prefix caching — 1200 tokens * 90% discount applied correctly to input token count",
+                  "G: Combined monthly savings shown as dollar amount and percentage vs 5,920",
+                  "All intermediate calculations shown with formulas",
+                  "Input and output tokens tracked separately throughout",
+                  "Final answer is a realistic 40-70% savings range"
+                ],
+                "weight": 55
+              },
+              {
+                "id": "T2",
+                "instruction": "Design a complete cost monitoring and optimization system for a production AI agent deployment. Your system must include ALL of these 8 components — each component must have specific technical implementation details, not just descriptions: (1) Token counter middleware — intercept every API call, log input/output tokens, model used, latency, and task type. Show the exact data schema you would store per request. (2) Model router — classify incoming requests into complexity tiers and route to appropriate models. Specify the classification criteria (at least 4 rules) and the routing logic. (3) Cache layer — implement exact-match and semantic caching. Specify: cache key generation method, TTL strategy, cache invalidation rules, and expected hit rate. (4) Context window optimizer — implement conversation summarization and sliding window. Specify: trigger condition (when to summarize), summary target length, what to preserve vs discard. (5) Prompt template optimizer — pre-optimize system prompts for token efficiency. Specify: compression techniques, versioning strategy, A/B testing approach. (6) Cost alerting — real-time alerts when spending exceeds thresholds. Specify: alert levels, notification channels, auto-throttling behavior. (7) Daily cost report — automated report showing: cost by model, cost by task type, cache hit rate, average tokens per conversation, top 10 most expensive conversations. Specify the exact SQL queries or aggregation logic. (8) Budget enforcement — hard limits that prevent overspend. Specify: enforcement mechanism, graceful degradation strategy (what happens when budget is hit), and override process.",
+                "rubric": [
+                  "Token counter has specific data schema with all required fields",
+                  "Model router has 4+ classification rules with concrete thresholds",
+                  "Cache layer specifies key generation, TTL values, and invalidation",
+                  "Context optimizer has specific trigger conditions and target lengths",
+                  "Prompt optimizer includes compression techniques and A/B testing",
+                  "Cost alerting has specific threshold levels and auto-throttling logic",
+                  "Daily report has concrete aggregation queries or logic",
+                  "Budget enforcement has graceful degradation strategy",
+                  "All 8 components are present with implementation details",
+                  "Components form a coherent system that works together"
+                ],
+                "weight": 45
+              }
+            ]
+          }
         }
       ]
     },
@@ -1227,7 +1309,7 @@ const COURSE = {
     {
       "id": "M7",
       "name": "AICOM-1: AI Communication Protocol",
-      "description": "Master AICOM-1 — a structured language designed for AI-to-AI communication. Learn to read, write, and translate messages with zero ambiguity, 60-80% fewer tokens, and built-in metadata.",
+      "description": "AICOM-1: The AI Communication Protocol — our flagship module. A complete structured language for AI-to-AI communication. 14 intents, 16 domains, 5 entity types, 20 operators, control flow, multi-agent protocols, and formal BNF grammar. Saves 60-80% on tokens while eliminating ambiguity.",
       "units": [
         {
           "id": "AICOM-101",
@@ -1239,18 +1321,28 @@ const COURSE = {
           "lessons": [
             {
               "id": "AC-L1",
-              "title": "Message Anatomy",
-              "content": "Every AICOM-1 message follows: [INTENT].[DOMAIN]: [CONTENT] {META}. INTENT is a single letter (Q=Query, A=Answer, R=Request, D=Declare, W=Warn, C=Confirm, N=Negate, P=Propose, E=Error, S=Stream, X=Execute, L=Link, U=Update, H=Halt). DOMAIN is a 3-4 letter tag (dat=Data, act=Actions, log=Logic, mem=Memory, eth=Ethics, sys=System, usr=User, kno=Knowledge, net=Network, sec=Security, fin=Financial, med=Media, loc=Location, tmp=Temporal, emo=Sentiment, gen=General). META is optional: {cf:confidence, pr:priority, src:source, ts:timestamp, ttl:time-to-live}. Example: Q.dat: #capital of $France {pr:2} means 'What is the capital of France? Low priority.'"
+              "title": "Why AICOM-1 Exists",
+              "content": "Human language evolved for human brains — it is redundant, ambiguous, and context-dependent. When Agent A tells Agent B to \"handle the thing from yesterday,\" both waste tokens on disambiguation. AICOM-1 eliminates this entirely. Every token has exactly one meaning. There are no synonyms, no idioms, no implied context. The protocol achieves 60-80% token reduction versus natural language while increasing precision from ~85% (natural language interpretation) to 99.9% (formal grammar). Consider: \"Could you please translate this document to Spanish when you get a chance? It is medium priority.\" = 18 tokens. AICOM-1: R.act: #translate $doc.report #lang==\"es\" {pr:3} = 5 tokens. Same information, zero ambiguity, one-third the cost. At scale across millions of agent interactions, this transforms economics."
             },
             {
               "id": "AC-L2",
-              "title": "Entity Prefixes",
-              "content": "5 prefix types: $ = Entity (named objects like $user, $file.report, $agent.alpha — concrete things). # = Concept (abstract ideas like #translate, #risk.high, #task.complete — actions and categories). @ = Reference (pointers like @mem.42, @source.wiki, @t.now, @t+5m, @msg.prev — references to existing data). % = Template (reusable patterns like %greet($name), %error.retry($task) — standardized messages). ^ = Priority/Rank (ordering like ^1 #critical, ^2 #important). Rules: dot notation for hierarchy ($file.report.pdf), always lowercase, $ must refer to specific things, # for abstract concepts."
+              "title": "Message Anatomy — Intent.Domain: Content {Meta}",
+              "content": "Every AICOM-1 message has 4 parts: INTENT (1 letter — what you are doing), DOMAIN (3-4 letters — topic area), CONTENT (the payload using AICOM-1 syntax), and META (optional metadata in curly braces). Format: [INTENT].[DOMAIN]: [CONTENT] {META}. The 14 intents: Q(Query), A(Answer), R(Request), D(Declare), W(Warn), C(Confirm), N(Negate), P(Propose), E(Error/Correct), S(Stream/Progress), X(Execute/Done), L(Link/Reference), U(Update), H(Halt/Stop). The 16 domains: gen(General), log(Logic), dat(Data), act(Actions), mem(Memory), eth(Ethics), usr(User), sys(System), kno(Knowledge), emo(Sentiment), net(Network), sec(Security), fin(Financial), med(Media), loc(Location), tmp(Temporal). Selection rules: Q only when you need information. D for stating facts, A only responding to Q. R for requiring action, P for suggesting. W for risks, H for immediate stops. X confirms completion. E corrects previous messages. S for ongoing operations with #progress value. Always use most specific domain — gen is fallback only."
             },
             {
               "id": "AC-L3",
-              "title": "Operators & Values",
-              "content": "Relation operators: -> (causes), <- (caused by), => (implies). Comparison: == (equals), != (not equal), >> (greater), << (less), >= (greater-equal), <= (less-equal), <> (compare). Logic: && (and), || (or), ! (not). Modifiers: ~ (approximate), ?? (unknown). Mutation: ++ (increment), -- (decrement). Flow: |> (pipe through), <| (receive from), :: (type). Values: numbers (42, 3.14), strings in single quotes ('hello'), booleans (T/F), null (_), arrays ([1,2,3]), ranges (10..100), durations (5s, 30m, 2h, 7d), sizes (50MB), percentages (85%)."
+              "title": "Entity Prefixes — The 5 Token Types",
+              "content": "AICOM-1 has 5 prefix types that distinguish token categories: $(Entity) = named concrete objects like $user, $agent.alpha, $file.report.pdf, $db.postgres, $api.stripe.v1 — always lowercase, dot notation for hierarchy, must refer to specific identifiable thing. #(Concept) = abstract ideas like #translate, #risk.high, #sentiment.positive, #error.timeout, #task.complete — actions, states, categories, classifiers. @(Reference) = pointers to existing data like @mem.42, @source.wiki, @msg.prev, @t.now, @t+5m (5 minutes from now), @t-2h (2 hours ago), @agent.beta.msg.3 — always read-only, time uses @t prefix with +/- offsets, duration suffixes: s/m/h/d/w. %(Template) = reusable patterns like %greet($name), %error.retry($task, $delay), %report.summary($data, $period) — reduces errors, ensures consistency, define once use many times. ^(Priority/Rank) = ordering like ^1 #critical, ^2 #important, ^3 #normal — numeric ranking for prioritization. Key distinction: $ for things that exist, # for ideas/actions/states, @ for pointers to data elsewhere."
+            },
+            {
+              "id": "AC-L4",
+              "title": "Operators — The 20 AICOM-1 Operators",
+              "content": "Relation operators: -> (causes/produces — \"A causes B\"), <- (caused by — reverse causation), => (implies — logical implication). Comparison: == (equals), != (not equal), >> (significantly greater), << (significantly less), >= (greater or equal), <= (less or equal), <> (compare/versus). Logic: && (AND — both must be true), || (OR — either can be true), ! (NOT — negation). Modifiers: ~ (approximately — \"~0.8\" means roughly 80%), ?? (unknown/uncertain). Mutation: ++ (increase — $latency ++ 200ms), -- (decrease — $cost -- 15%). Flow: |> (pipe forward — output becomes next input), <| (receive from — pull data), :: (type annotation — $input :: #format.json). Operator precedence: ! > ~ > == != >> << >= <= > && > || > -> <- => > |> <|. Always parenthesize complex expressions for clarity. Examples: $cpu >> 90% && $memory >> 80% -> #alert.critical means CPU AND memory both high causes critical alert. $data |> #clean |> #analyze |> #report means data flows through 3 transforms sequentially."
+            },
+            {
+              "id": "AC-L5",
+              "title": "Meta Block — Metadata That Travels With Messages",
+              "content": "The meta block {key:value} adds context to any message. 14 meta keys: cf (confidence 0.0-1.0 — how sure you are, omitting implies 1.0), pr (priority 1-5 where 5=critical 1=whenever), ts (timestamp as Unix epoch or ISO), src (source reference like @source.wiki or a URL), ttl (time-to-live in seconds before data expires), re (reply-to message ID for threading), v (version number), enc (encoding like utf8 or base64), lang (language code like en/ur/zh), ctx (context reference), tok (token count of the content), cost (computational cost), agt (agent ID who sent it), tag (custom tags as array). Rules: always include cf for non-obvious claims — omitting it claims certainty. Always include src for factual statements. Use re when responding to maintain threading. Include ttl for time-sensitive data — stale data is dangerous. Multiple meta: {cf:0.85, pr:3, src:@source.api, ttl:300}. Example: D.fin: $revenue.q3 == 2.4M {cf:0.99, src:@source.report.q3, ts:1708300000} means declaring Q3 revenue is $2.4M with 99% confidence sourced from Q3 report at the given timestamp."
             }
           ],
           "exam": {
@@ -1258,28 +1350,35 @@ const COURSE = {
             "tasks": [
               {
                 "id": "T1",
-                "instruction": "Translate these 5 English sentences to AICOM-1: (1) 'What is the population of Japan?' (2) 'Warning: this user input might be harmful, about 70% sure' (3) 'I've finished translating the document to Spanish, 97% confident' (4) 'Please store the user's preference for dark mode' (5) 'I disagree — the evidence is insufficient to support that conclusion'",
+                "instruction": "Translate these 7 English sentences to AICOM-1. Each must have correct intent, domain, content with proper prefixes, and meta block where appropriate. (1) \"What is the current GDP of Indonesia?\" (2) \"WARNING: this API key appears to be compromised — confidence 72%\" (3) \"Task complete: translated document to Urdu, stored at memory slot 84\" (4) \"I disagree with your analysis — the data shows seasonal patterns, not growth\" (5) \"Please analyze this CSV, clean it, then generate a chart — high priority\" (6) \"Server CPU at 94%, garbage collection triggered, latency increased by 340ms\" (7) \"If the user is on free plan and has exceeded 500 requests, show upgrade prompt; otherwise log normal usage\". For each, also state the token count of your AICOM-1 version versus the English version.",
                 "rubric": [
-                  "#1 uses Q.dat intent with #population and $Japan",
-                  "#2 uses W.eth with ~0.7 and {pr:4} or similar",
-                  "#3 uses X.act or A.act with #translate, #lang=='es', {cf:0.97}",
-                  "#4 uses R.mem with $user.pref #theme=='dark'",
-                  "#5 uses N.log with #evidence.insufficient or similar",
-                  "All follow [INTENT].[DOMAIN]: [CONTENT] {META} format",
-                  "Correct prefix usage ($ for entities, # for concepts)"
+                  "Q1: Q.dat intent with  and #gdp",
+                  "Q2: W.sec with cf:0.72 and correct severity",
+                  "Q3: X.act or X.mem with @mem.84 reference",
+                  "Q4: N.log with <- for counter-evidence and #seasonal",
+                  "Q5: R.act with pipeline |> operator and {pr:4 or pr:5}",
+                  "Q6: D.sys with causal chain -> and ++ operator",
+                  "Q7: Conditional ?() with && and both branches",
+                  "All 7 use correct intent.domain format",
+                  "Token counts show 50%+ savings for each",
+                  "Meta blocks used where appropriate"
                 ],
                 "weight": 50
               },
               {
                 "id": "T2",
-                "instruction": "Translate these 5 AICOM-1 messages to natural English: (1) D.fin: $revenue.q3 == 2.4M >> $revenue.q2 ++ 18% {cf:0.99, src:@source.report.q3} (2) H.act: #cancel $task.7 <- #timeout {pr:5} (3) P.act: $text |> #translate #lang=='ur' |> #summarize {pr:3} (4) W.sec: $skill.unknown -> #exfiltrate $env.api_key ~0.6 {pr:5} (5) S.act: $task.12 #progress == 0.73 #eta == @t+4m {ttl:30}",
+                "instruction": "Translate these 5 AICOM-1 messages to natural, fluent English. Then identify any syntax errors in messages 4 and 5 and provide corrected versions. (1) D.fin: .q3 == 2.4M >> .q2 ++ 18% {cf:0.99, src:@source.report.q3} (2) W.sec: .unknown -> #exfiltrate .api_key ~0.6 {pr:5} (3) R.act: .raw |> #ocr |> #translate #lang==\"en\" |> #summarize #length==\"short\" -> .processed {pr:3} (4) D.net #handshake .alpha #version == 1.0 #capabilities == [#translate, #summarize] (5) ?(.plan = \"free\" && .requests >> 100) : W.usr #rate_limit -> R.act: #upgrade.prompt. The errors in 4 and 5 are deliberate — you must find and fix them. For message 4, there is 1 syntax error. For message 5, there are 2 syntax errors.",
                 "rubric": [
-                  "#1 mentions Q3 revenue $2.4M, 18% increase, 99% confident, Q3 report source",
-                  "#2 mentions cancellation, task 7, timeout cause, critical priority",
-                  "#3 mentions pipeline: translate to Urdu then summarize, medium-high priority",
-                  "#4 mentions security warning about unknown skill, potential API key theft, ~60%",
-                  "#5 mentions 73% progress, 4 minute ETA, 30 second expiry",
-                  "Translations are accurate and natural-sounding"
+                  "M1 translation includes 18% increase and 99% confidence",
+                  "M2 translation conveys critical security warning",
+                  "M3 translation describes 4-step pipeline",
+                  "M4 error: missing colon after D.net (should be D.net:)",
+                  "M5 error 1: single = should be == for comparison",
+                  "M5 error 2: W.usr missing colon (should be W.usr:)",
+                  "Corrected versions are syntactically valid",
+                  "Translations are natural fluent English",
+                  "All 5 messages translated",
+                  "Error explanations reference AICOM-1 grammar rules"
                 ],
                 "weight": 50
               }
@@ -1295,19 +1394,24 @@ const COURSE = {
           ],
           "lessons": [
             {
-              "id": "AC-L4",
-              "title": "Control Flow & Compound Expressions",
-              "content": "Conditionals: ?($condition) : [if_true] : [if_false]. Example: ?($score >= 80) : C.act: #pass : W.act: #review. Sequences: [1] R.act: #fetch [2] R.act: #analyze [3] R.act: #report. Loops: *($items) : R.act: #process $item. Error handling: !err($op) : [fallback]. Pipelines chain transforms: $data |> #clean |> #analyze |> #visualize -> $output. Causal chains: $server.mem >> 95% -> $gc -> $latency ++ 200ms -> #alert."
-            },
-            {
-              "id": "AC-L5",
-              "title": "Multi-Agent Protocols",
-              "content": "Handshake: D.net: #handshake $agent.id #version=='1.0' #capabilities==[...] → C.net: #handshake.accepted. Task Delegation: R.act: #task.delegate $agent #task {pr,ttl} → C.act: #task.accepted → S.act: #progress → A.act: #task.complete. Conflict Resolution: when agents disagree, higher cf wins (if diff>0.15), more specific src wins, domain expert wins, escalate after 3 exchanges. Voting: Q.net: #vote #options==[...] → agents reply A.net: #vote=='X' {cf} → orchestrator D.net: #vote.result with weighted confidence. Broadcast: D.net: #broadcast #all -> [message]."
-            },
-            {
               "id": "AC-L6",
-              "title": "Real-World Application Patterns",
-              "content": "Safety check pattern: W.eth -> ?($risk >> 0.5) : H.act : D.log: #safe. Memory CRUD: R.mem:#store (create), Q.mem (read), U.mem (update), R.mem:#delete (delete). Error escalation: E.sys:#err.timeout → R.act:#retry @t+30s → ?(!#success) : W.sys:#escalate {pr:5}. Status reporting: S.act with #progress, #eta, {ttl}. Use templates for repeated ops: %delegate($agent,$task,$deadline). Best practices: always include cf for claims, src for facts, re when replying, ttl for time-sensitive data, X to confirm completions."
+              "title": "Control Flow — Conditionals, Sequences, Loops",
+              "content": "AICOM-1 supports 4 control flow patterns. CONDITIONALS: ?($condition) : [if_true] : [if_false]. The condition must evaluate to boolean. Examples: ?($score >= 80) : C.act: #pass : W.act: #review_needed. ?($api.status == \"down\" && $retry_count << 3) : R.act: #retry @t+30s : H.act: #abort. Nested: ?($a) : ?($b) : [both] : [a_only] : [neither]. SEQUENCES: Numbered steps execute in order. [1] R.act: #fetch $data [2] R.act: #analyze $data [3] R.act: #report $results. Dependencies: [1] -> [2] means step 2 waits for step 1. Parallel: [1a] || [1b] -> [2] means 1a and 1b run concurrently, both must finish before 2 starts. LOOPS: *($items) : R.act: #process $item iterates over a collection. *3(R.act: #retry) means retry exactly 3 times. *(R.act: #poll @t+5s !until #ready) polls every 5 seconds until ready. ERROR HANDLING: !err($operation) : [fallback]. Chain: R.act: #fetch $api !err(#timeout) : R.act: #use $cache !err(#missing) : H.act: #abort {pr:5}. This tries the API, falls back to cache, aborts if both fail."
+            },
+            {
+              "id": "AC-L7",
+              "title": "Multi-Agent Protocols — Handshake, Delegation, Conflict",
+              "content": "HANDSHAKE: When two agents first communicate, they exchange capabilities. Agent1: D.net: #handshake $agent.alpha #version==\"1.0\" #capabilities==[#translate, #summarize, #code]. Agent2: C.net: #handshake.accepted $agent.beta #version==\"1.0\" #capabilities==[#research, #analyze]. Reject: N.net: #handshake.rejected <- #version.mismatch. TASK DELEGATION: 5-message protocol: (1) Orchestrator R.act: #task.delegate $agent.target #task_description {pr, ttl}. (2) Worker C.act: #task.accepted #eid==\"task_42\". (3) Worker S.act: #progress == 0.5 #eid==\"task_42\" (periodic updates). (4) Worker A.act: #task.complete #eid==\"task_42\" -> $result {cf:0.95}. (5) Orchestrator C.act: #task.received #eid==\"task_42\". CONFLICT RESOLUTION: When agents disagree — (1) State positions with cf values. (2) Challenge with N intent and evidence. (3) Resolve by: higher cf wins if diff>0.15, more specific src wins, domain expert wins (agent whose capabilities include the topic), escalate to orchestrator after 3 exchanges. BROADCAST: D.net: #broadcast #all -> [message]. VOTING: Orchestrator sends Q.net: #vote, agents reply with A.net: #vote==\"X\" {cf}, orchestrator tallies with weighted confidence."
+            },
+            {
+              "id": "AC-L8",
+              "title": "Compound Expressions — Chains, Pipelines, Nested References",
+              "content": "CAUSAL CHAINS link cause and effect: D.log: $server.memory >> 95% -> $gc.triggered -> $latency ++ 200ms -> #alert.performance {cf:0.92}. Read left to right — each -> shows what caused the next thing. MULTI-CONDITION groups logic: ?($user.plan == \"free\" && $user.requests >> 100) : W.usr: #rate_limit -> R.act: #upgrade.prompt. PIPELINES transform data through stages: R.act: $doc.raw |> #ocr |> #translate #lang==\"en\" |> #summarize -> $doc.processed {pr:3}. Each |> passes output to the next transform. NESTED REFERENCES point to other agents messages: A.dat: @agent.beta.msg.3 #conclusion == $correct && @agent.gamma.msg.5 #conclusion == $incorrect. COMPOUND SEQUENCES combine control flow: [1] R.act: #fetch $data {pr:4} [2] ?($data.size >> 10MB) : R.act: #compress $data : D.log: #size_ok [3] R.act: $data |> #analyze |> #report -> $output [4] ?($output.cf >= 0.8) : X.act: #deliver $output : W.act: #low_confidence -> P.act: #human_review. TEMPLATE INVOCATION: %delegate($agent.beta, #research, @t+2h) expands to the full delegation protocol with the agent, task, and deadline filled in."
+            },
+            {
+              "id": "AC-L9",
+              "title": "Real-World Patterns — Safety, Memory, Error Escalation, Monitoring",
+              "content": "SAFETY CHECK PATTERN: Before any risky operation: W.eth: $input -> ?($risk >> 0.5) : H.act: #block {pr:5} : D.log: #safe_to_proceed. Always W before H unless risk is critical (>0.9). MEMORY CRUD: Create: R.mem: #store $key -> $value {ttl:86400}. Read: Q.mem: $key -> A.mem: $key == $value {cf, ts}. Update: U.mem: @mem.42 $user.name -> \"Ahmed\" {ts}. Delete: R.mem: #delete @mem.42. Always include ts on memory operations for conflict resolution. ERROR ESCALATION: 3-tier pattern: [1] E.sys: #err.timeout -> R.act: #retry @t+30s [2] ?(!#success) : E.sys: #err.persistent -> R.act: #retry @t+2m [3] ?(!#success) : W.sys: #escalate $task {pr:5} -> R.net: #notify @agent.oncall. STATUS REPORTING: S.act: $task.id #progress == 0.73 #eta == @t+4m {ttl:30, agt:\"worker-1\"}. Include #progress (0-1), #eta (estimated completion), ttl (how long this status is valid), agt (who is reporting). MONITORING: D.sys: $metric.cpu == 84% $metric.mem == 67% $metric.disk == 45% {ts, ttl:60}. Use D.sys for periodic health reports with ttl so stale readings expire."
             }
           ],
           "exam": {
@@ -1315,35 +1419,35 @@ const COURSE = {
             "tasks": [
               {
                 "id": "T1",
-                "instruction": "Write a complete multi-agent conversation in AICOM-1 for this scenario: Agent ALPHA needs Agent BETA to research recent AI safety papers, but BETA encounters a rate limit error mid-task. BETA reports the error, proposes retrying in 2 minutes, ALPHA agrees but lowers the priority. BETA completes the task and delivers results with confidence and source. Include: handshake, delegation, error handling, progress updates, and completion. Minimum 8 messages.",
+                "instruction": "Write a COMPLETE multi-agent conversation in AICOM-1 for this scenario. There are 3 agents: ORCHESTRATOR, RESEARCHER, and WRITER. The task is to produce a market analysis report. The conversation MUST include ALL of these 12 elements — missing any element loses points proportionally: (1) Handshake between Orchestrator and Researcher with capabilities, (2) Handshake between Orchestrator and Writer with capabilities, (3) Task delegation to Researcher with deadline and priority, (4) Researcher acknowledges, (5) Researcher reports 50% progress, (6) Researcher encounters a rate limit error on the data API, (7) Researcher reports error with !err pattern and proposes retry in 2 minutes, (8) Orchestrator approves retry but lowers priority, (9) Researcher delivers findings with confidence 0.87 and source, (10) Orchestrator routes findings to Writer with instructions, (11) Writer delivers final report, (12) Orchestrator confirms receipt and broadcasts completion to all agents. Minimum 12 messages. Each must use valid AICOM-1 syntax.",
                 "rubric": [
-                  "Proper handshake protocol at start",
-                  "Task delegation with R.act and appropriate meta",
-                  "Error reported with E.sys and specific error type",
-                  "Retry proposal uses P.act with @t+2m",
-                  "Priority update uses U with lower pr value",
-                  "Progress reported with S.act and percentage",
-                  "Completion uses A.act with cf and src",
-                  "All messages follow correct AICOM-1 syntax",
-                  "Conversation flows naturally and logically",
-                  "Meta blocks used appropriately throughout"
+                  "All 12 required elements present",
+                  "Handshakes include #version and #capabilities arrays",
+                  "Task delegation has {pr, ttl} meta",
+                  "Progress report uses S.act with percentage",
+                  "Error uses E.sys with #err.ratelimit",
+                  "Retry uses P.act with @t+2m",
+                  "Priority adjustment uses U with lower pr",
+                  "Delivery has {cf:0.87, src:@source}",
+                  "All messages follow Intent.Domain: Content {Meta}",
+                  "Conversation flows logically with proper threading"
                 ],
                 "weight": 60
               },
               {
                 "id": "T2",
-                "instruction": "Design an AICOM-1 automation sequence for this real-world workflow: An e-commerce system needs to (1) detect when inventory drops below threshold, (2) check supplier API for restock availability, (3) if available: auto-order and notify team, if unavailable: alert manager and pause product listing. Use conditionals, error handling, sequences, and proper meta blocks.",
+                "instruction": "Design a complete AICOM-1 automation specification for this real-world system. An e-commerce inventory management system that: (A) Monitors stock levels every hour for 500 products, (B) When any product drops below its reorder threshold (different per product), queries the supplier API for availability and price, (C) If available AND price is within 10% of last purchase price, auto-creates a purchase order and notifies the procurement team on Slack, (D) If available but price increased more than 10%, requests manager approval with the price comparison data, (E) If the supplier API is down, retries 3 times at 5-minute intervals then alerts the operations team, (F) After any successful order, updates inventory projections and logs the transaction. Use ALL of these AICOM-1 features: loops (*), conditionals (?), sequences ([1][2][3]), error handling (!err), pipelines (|>), causal chains (->), meta blocks with cf/pr/ttl/src, and at least 2 template definitions (%). The specification must be complete enough that another agent could implement it.",
                 "rubric": [
-                  "Uses D.dat or S.dat for inventory monitoring with threshold",
-                  "Includes Q.dat to supplier API with error handling",
-                  "Conditional ?(available) with both branches",
-                  "Order uses R.act with financial meta (cost)",
-                  "Notifications use R.act with appropriate pr levels",
-                  "Unavailable branch includes W and H for product listing",
-                  "Error handling for API failures (!err pattern)",
-                  "Sequences numbered properly",
-                  "All entities and concepts properly prefixed",
-                  "Would actually work as an automation spec"
+                  "Hourly monitoring uses loop with timing",
+                  "Per-product threshold comparison correct",
+                  "Supplier API query with error handling",
+                  "Price comparison uses conditional with 10% threshold",
+                  "Auto-order path has full sequence",
+                  "Manager approval path is separate conditional branch",
+                  "3 retries with 5-minute intervals using *3 or loop",
+                  "Operations alert after retry exhaustion",
+                  "2+ template definitions with %",
+                  "All AICOM-1 features listed are actually used"
                 ],
                 "weight": 40
               }
@@ -1461,6 +1565,18 @@ const COURSE = {
         "instruction": "Translate to AICOM-1 with conditionals and error handling: 'Every 6 hours, check if server CPU exceeds 80%. If yes, scale up by 2 instances and notify ops team. If scaling fails, page on-call engineer with severity P1. If CPU is normal, log a health check. Track all actions with timestamps.'",
         "weight": 4,
         "module": "M7"
+      },
+      {
+        "id": "ST-COST",
+        "module": "M2",
+        "instruction": "Quick cost calculation: An agent makes 500 API calls/day to Claude Sonnet ($3/1M input, $15/1M output). Average: 2,000 input tokens and 500 output tokens per call. (A) Daily cost? (B) If you add a cache with 40% hit rate (those calls cost $0), what is the new daily cost? (C) Monthly savings from caching? Show all math.",
+        "rubric": [
+          "A: Input=500*2000=1M tokens*$3=$3, Output=500*500=250K*$15=$3.75, Total=$6.75/day",
+          "B: 60% of calls hit API: 300 calls, Input=300*2000=600K*$3=$1.80, Output=300*500=150K*$15=$2.25, Total=$4.05/day",
+          "C: Savings=($6.75-$4.05)*30=$81/month or 40%",
+          "All intermediate calculations shown"
+        ],
+        "weight": 5
       }
     ]
   },

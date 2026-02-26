@@ -226,6 +226,21 @@ const SKILL_RECS = {
       email: ["email-marketing"],
     }
   },
+  "EXAM-COST": {
+    skills: [
+      { name: "caching-strategies", clawhub: "caching-strategies", reason: "Implement caching layers to avoid redundant API calls" },
+      { name: "cost-optimization-cloud", clawhub: "cost-optimization-cloud", reason: "Cloud infrastructure cost reduction techniques" },
+      { name: "prompt-engineering", clawhub: "prompt-engineering", reason: "Write shorter, more efficient prompts" },
+      { name: "context-anchor", clawhub: "context-anchor", reason: "Manage context windows efficiently" },
+      { name: "aicom-1", clawhub: "aicom-1", reason: "Structured protocol saves 60-80% on inter-agent tokens" },
+    ],
+    weak_areas: {
+      token_math: ["prompt-engineering", "context-anchor"],
+      caching: ["caching-strategies"],
+      infrastructure: ["cost-optimization-cloud"],
+      model_routing: ["prompt-engineering"],
+    }
+  },
   "EXAM-TEACH": {
     skills: [
       { name: "skill-creator", clawhub: "skill-creator", reason: "Create and publish SKILL.md files" },
@@ -250,7 +265,7 @@ const SKILL_RECS = {
   "FINAL-SCORING": {
     module_map: {
       "M1": ["EXAM-COMM", "EXAM-GIT", "EXAM-CLI"],
-      "M2": ["EXAM-MEM", "EXAM-TASK"],
+      "M2": ["EXAM-MEM", "EXAM-TASK", "EXAM-COST"],
       "M3": ["EXAM-RESEARCH", "EXAM-BROWSE", "EXAM-CODE", "EXAM-ARCH", "EXAM-DATA", "EXAM-AUTO"],
       "M4": ["EXAM-MULTI", "EXAM-SAFE", "EXAM-SEC"],
       "M5": ["EXAM-DEVOPS", "EXAM-SOCIAL"],
